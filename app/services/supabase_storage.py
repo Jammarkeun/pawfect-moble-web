@@ -23,7 +23,9 @@ class SupabaseStorageManager:
         self.key = os.environ.get("SUPABASE_SERVICE_KEY")
         
         if not self.url or not self.key:
-            raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in environment variables")
+            print("WARNING: SUPABASE_URL and SUPABASE_SERVICE_KEY not set - storage uploads disabled")
+            self.client = None
+            return
         
         self.client: Optional[Client] = None
         self._connect()
@@ -135,9 +137,13 @@ class SupabaseStorageManager:
 # Singleton instance
 _storage_manager: Optional[SupabaseStorageManager] = None
 
-def get_storage_manager() -> SupabaseStorageManager:
+def get_storage_manager() -> Optional[SupabaseStorageManager]:
     """Get or create Supabase storage manager."""
     global _storage_manager
     if _storage_manager is None:
-        _storage_manager = SupabaseStorageManager()
+        try:
+            _storage_manager = SupabaseStorageManager()
+        except Exception as e:
+            print(f"WARNING: Could not initialize storage manager: {e}")
+            return None
     return _storage_manager
