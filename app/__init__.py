@@ -198,8 +198,12 @@ def create_app(config_name='default'):
     @app.errorhandler(500)
     def internal_error(error):
         import traceback
-        logger.error(f"Internal Server Error: {str(error)}\n{traceback.format_exc()}")
-        return jsonify({"error": "Internal server error", "detail": str(error)}), 500
+        error_details = traceback.format_exc()
+        logger.error(f"Internal Server Error: {str(error)}\n{error_details}")
+        # In production, don't expose full traceback
+        if app.config.get('DEBUG'):
+            return jsonify({"error": "Internal server error", "detail": str(error), "traceback": error_details}), 500
+        return jsonify({"error": "Internal server error", "detail": "500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application."}), 500
     
     @app.errorhandler(CSRFError)
     def handle_csrf_error(error):
