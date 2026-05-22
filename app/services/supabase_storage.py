@@ -19,11 +19,12 @@ class SupabaseStorageManager:
     
     def __init__(self):
         """Initialize Supabase client."""
-        self.url = os.environ.get("SUPABASE_URL", "https://pplprkapzevcuelsqcfv.supabase.co")
-        self.key = os.environ.get(
-            "SUPABASE_SERVICE_ROLE_KEY",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwbHBya2FwemV2Y3VlbHNxY2Z2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzQ1NjAxOSwiZXhwIjoyMDkzMDMyMDE5fQ.durkbpEyVgJftk3FWXusiBviTCRBk9fCZAciPzLwHJo"
-        )
+        self.url = os.environ.get("SUPABASE_URL")
+        self.key = os.environ.get("SUPABASE_SERVICE_KEY")
+        
+        if not self.url or not self.key:
+            raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in environment variables")
+        
         self.client: Optional[Client] = None
         self._connect()
     
