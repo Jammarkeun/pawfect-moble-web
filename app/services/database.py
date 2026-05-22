@@ -12,20 +12,7 @@ load_dotenv()
 class Database:
     """Database service class for Supabase operations"""
     
-    _instance = None
-    _client = None
-    
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(Database, cls).__new__(cls)
-        return cls._instance
-    
     def __init__(self):
-        # Only initialize once
-        if Database._client is not None:
-            self.client = Database._client
-            return
-            
         # Load directly from environment variables
         self.supabase_url = os.getenv('SUPABASE_URL', '')
         # Use SERVICE_ROLE key to bypass RLS (Row Level Security)
@@ -35,8 +22,10 @@ class Database:
         if self.supabase_url and self.supabase_key:
             try:
                 self.client = create_client(self.supabase_url, self.supabase_key)
-                Database._client = self.client
-                logging.info(f"Supabase client initialized successfully for URL: {self.supabase_url[:40]}...")
+                # Only log once per process
+                if not hasattr(Database, '_logged'):
+                    logging.info(f"Supabase client initialized successfully")
+                    Database._logged = True
             except Exception as e:
                 logging.error(f"Failed to initialize Supabase client: {e}")
         else:
