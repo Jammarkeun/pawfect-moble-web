@@ -184,6 +184,10 @@ class User:
         """Authenticate using Supabase Auth"""
         db = Database()
         
+        if not db.client:
+            print("ERROR: Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_KEY.")
+            return None
+        
         try:
             auth_response = db.client.auth.sign_in_with_password({
                 'email': email,
@@ -249,6 +253,8 @@ class User:
         db = Database()
         
         try:
+            if not db.client:
+                return []
             query = db.client.table(cls.TABLE_NAME).select('*')
             
             if role:
@@ -274,6 +280,8 @@ class User:
         db = Database()
         
         try:
+            if not db.client:
+                return 0
             query = db.client.table(cls.TABLE_NAME).select('*', count='exact')
             
             if role:

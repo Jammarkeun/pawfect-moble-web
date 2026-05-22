@@ -195,8 +195,9 @@ def create_app(config_name='default'):
     
     @app.errorhandler(500)
     def internal_error(error):
-        logger.error(f"Internal Server Error: {str(error)}")
-        return jsonify({"error": "Internal server error"}), 500
+        import traceback
+        logger.error(f"Internal Server Error: {str(error)}\n{traceback.format_exc()}")
+        return jsonify({"error": "Internal server error", "detail": str(error)}), 500
     
     @app.errorhandler(CSRFError)
     def handle_csrf_error(error):
