@@ -22,7 +22,7 @@ csrf = CSRFProtect()
 # Initialize SocketIO with CORS enabled and other configurations
 socketio = SocketIO(
     cors_allowed_origins="*",
-    async_mode='eventlet',
+    async_mode='threading',
     logger=False,
     engineio_logger=False,
     ping_timeout=60,
@@ -63,10 +63,12 @@ def create_app(config_name='default'):
         SECRET_KEY=os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production'),
         SESSION_TYPE='filesystem',
         UPLOAD_FOLDER='static/uploads',
-        SESSION_COOKIE_SECURE=os.getenv('FLASK_ENV') == 'production',
+        SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Lax',
         PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+        WTF_CSRF_TIME_LIMIT=None,
+        WTF_CSRF_SSL_STRICT=False,
         JSON_SORT_KEYS=False,
         JSON_AS_ASCII=False,
         TEMPLATES_AUTO_RELOAD=True,
