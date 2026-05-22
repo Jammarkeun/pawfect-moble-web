@@ -21,10 +21,12 @@ class Database:
         
         if self.supabase_url and self.supabase_key:
             try:
-                # Create client without proxy parameter for compatibility
                 self.client = create_client(self.supabase_url, self.supabase_key)
+                logging.info(f"Supabase client initialized successfully for URL: {self.supabase_url[:40]}...")
             except Exception as e:
                 logging.error(f"Failed to initialize Supabase client: {e}")
+        else:
+            logging.error(f"Supabase env vars missing — URL set: {bool(self.supabase_url)}, KEY set: {bool(self.supabase_key)}")
     
     def init_app(self, app):
         """Initialize with Flask app"""

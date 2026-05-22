@@ -140,6 +140,8 @@ class Product:
         db = Database()
         
         try:
+            if not db.client:
+                raise Exception("Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_KEY env vars.")
             # Build query
             query = db.client.table(cls.TABLE_NAME).select('*')
             
@@ -204,6 +206,8 @@ class Product:
         db = Database()
         
         try:
+            if not db.client:
+                return 0
             query = db.client.table(cls.TABLE_NAME).select('*', count='exact')
             
             if status:
@@ -253,6 +257,8 @@ class Product:
         db = Database()
         
         try:
+            if not db.client:
+                return []
             query = db.client.table('product_images').select('*') \
                 .eq('product_id', product_id) \
                 .order('display_order') \
