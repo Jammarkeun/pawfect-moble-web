@@ -295,15 +295,19 @@ def create_app(config_name='default'):
         from app.models.user import User
         
         data = {
-            'csrf_token_value': generate_csrf()
+            'csrf_token_value': generate_csrf(),
+            'current_user': None,
+            'pending_orders': 0,
+            'unread_messages': 0
         }
         
         # Inject current user
         if 'user_id' in session:
-            current_user = User.get_by_id(session['user_id'])
-            data['current_user'] = current_user
-        else:
-            data['current_user'] = None
+            try:
+                current_user = User.get_by_id(session['user_id'])
+                data['current_user'] = current_user
+            except Exception:
+                pass
         
         # Add seller-specific data
         seller_id = session.get('user_id') if session.get('user_role') == 'seller' else None
@@ -315,9 +319,7 @@ def create_app(config_name='default'):
                 unread = db.select('notifications', filters={'user_id': seller_id, 'is_read': False})
                 data['unread_messages'] = len(unread)
             except Exception:
-                data.update({'pending_orders': 0, 'unread_messages': 0})
-        else:
-            data.update({'pending_orders': 0, 'unread_messages': 0})
+                pass
         
         return data
     
