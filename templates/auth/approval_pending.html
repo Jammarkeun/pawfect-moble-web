@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Approval Pending - Pawfect Finds{% endblock %}
+
+{% block content %}
+<style>
+    .approval-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .approval-card {
+        max-width: 600px;
+        width: 100%;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .approval-header {
+        background: linear-gradient(135deg, #f8b739, #f39c12);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+
+    .approval-header i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .approval-body {
+        padding: 2rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: #ffc107;
+        color: #000;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .info-value {
+        color: #333;
+        text-align: right;
+    }
+</style>
+
+<div class="approval-container">
+    <div class="approval-card">
+        <div class="approval-header">
+            <i class="fas fa-hourglass-half"></i>
+            <h3 class="mb-0">{% if account_type == 'user' %}Account Under Review{% else %}Application Under Review{% endif %}</h3>
+        </div>
+
+        <div class="approval-body">
+            {% if account_type == 'seller' %}
+                <div class="text-center mb-4">
+                    <h5>Seller Application Pending</h5>
+                    <p class="text-muted">Your seller application has been submitted and is currently being reviewed by our admin team.</p>
+                </div>
+
+                <div class="mb-4">
+                    <div class="info-row">
+                        <span class="info-label">Business Name:</span>
+                        <span class="info-value">{{ request_data.business_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted:</span>
+                        <span class="info-value">{{ request_data.requested_at|format_datetime('%B %d, %Y') if request_data.requested_at else 'N/A' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value"><span class="status-badge">Pending Review</span></span>
+                    </div>
+                </div>
+
+            {% elif account_type == 'rider' %}
+                <div class="text-center mb-4">
+                    <h5>Rider Application Pending</h5>
+                    <p class="text-muted">Your rider application has been submitted and is currently being reviewed by our admin team.</p>
+                </div>
+
+                <div class="mb-4">
+                    <div class="info-row">
+                        <span class="info-label">Vehicle Type:</span>
+                        <span class="info-value">{{ request_data.vehicle_type|capitalize }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted:</span>
+                        <span class="info-value">{{ request_data.created_at|format_datetime('%B %d, %Y') if request_data.created_at else 'N/A' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value"><span class="status-badge">Pending Review</span></span>
+                    </div>
+                </div>
+            {% elif account_type == 'user' %}
+                <div class="text-center mb-4">
+                    <h5>Buyer Account Pending</h5>
+                    <p class="text-muted">Your buyer account is waiting for admin approval. You will be able to sign in once the review is complete.</p>
+                </div>
+
+                <div class="mb-4">
+                    <div class="info-row">
+                        <span class="info-label">Account Type:</span>
+                        <span class="info-value">Buyer</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value"><span class="status-badge">Pending Review</span></span>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>What happens next?</strong><br>
+                Our admin team will review your application and uploaded documents. You will receive an email notification once your application is approved or if we need additional information.
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="fas fa-lock me-2"></i>
+                <strong>Account Access:</strong><br>
+                You will be able to log in and access the platform once your application is approved by our admin team.
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('public.landing') }}" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

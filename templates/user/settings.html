@@ -1,0 +1,531 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings - Pawfect Finds{% endblock %}
+
+{% block content %}
+<style>
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #A1887F;
+    --beige: #F5EBDD;
+    --beige-light: #FAF5EE;
+}
+
+body {
+    background-color: var(--beige);
+    color: var(--brown-dark);
+}
+
+/* Seamless blended sections */
+.settings-section {
+    background: transparent;
+    padding: 2rem 0;
+    border: none;
+}
+
+.section-title {
+    color: var(--brown-dark);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    font-size: 0.9rem;
+}
+
+h2 {
+    color: var(--brown-dark);
+}
+
+/* Blended form controls */
+.form-label {
+    color: var(--brown-dark);
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+.form-control, .form-select {
+    border: none;
+    border-bottom: 2px solid rgba(109, 76, 65, 0.2);
+    border-radius: 0;
+    background-color: white;
+    padding: 0.75rem 0.5rem;
+    transition: all 0.3s ease;
+    color: var(--brown-dark);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom-color: var(--brown-primary);
+    box-shadow: 0 1px 0 0 var(--brown-primary);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: rgba(78, 52, 46, 0.4);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--brown-primary);
+    border: none;
+    border-radius: 25px;
+    padding: 0.65rem 2rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: var(--brown-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(78, 52, 46, 0.3);
+}
+
+.btn-warning {
+    background-color: var(--brown-light);
+    border: none;
+    border-radius: 25px;
+    padding: 0.65rem 2rem;
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+.btn-warning:hover {
+    background-color: var(--brown-dark);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(78, 52, 46, 0.3);
+}
+
+/* Outline buttons */
+.btn-outline-brown {
+    color: var(--brown-primary);
+    border: 1.5px solid var(--brown-primary);
+    background-color: transparent;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+.btn-outline-brown:hover {
+    color: #fff;
+    background-color: var(--brown-primary);
+    border-color: var(--brown-primary);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--brown-primary);
+    border: 1.5px solid var(--brown-primary);
+    border-radius: 20px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+.btn-outline-primary:hover {
+    background-color: var(--brown-primary);
+    color: #fff;
+    border-color: var(--brown-primary);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+.btn-outline-secondary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+.btn-info:hover {
+    transform: translateY(-1px);
+}
+
+.text-muted {
+    color: #7b5f52 !important;
+}
+
+/* Summary cards with subtle styling */
+.summary-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(109, 76, 65, 0.15);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card .section-title {
+    margin-bottom: 1rem;
+}
+
+/* Profile image styling */
+.img-thumbnail {
+    border: 2px solid rgba(109, 76, 65, 0.2);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Divider */
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(109, 76, 65, 0.2), transparent);
+    margin: 3rem 0;
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-cog"></i> Account Settings</h2>
+            <p class="text-muted">Manage your profile and account preferences</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Profile Information -->
+            <div class="settings-section">
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Profile Information
+                </div>
+                <div>
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ profile_form.hidden_tag() }}
+                        
+                        <!-- Profile Images -->
+                        <div class="mb-4">
+                            {{ profile_form.profile_image.label(class="form-label") }}
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    {{ profile_form.profile_image(class="form-control") }}
+                                    {% for error in profile_form.profile_image.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                    <small class="text-muted">Upload JPG, PNG, or JPEG images only.</small>
+                                </div>
+                                {% if user.profile_image %}
+                                <div class="col-md-4 text-center">
+                                    <img src="{{ user.profile_image|image_url }}" alt="Current Profile Image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                                    <div><small class="text-muted">Current profile image</small></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if user.id_picture %}
+                        <div class="mb-4">
+                            <label class="form-label">ID Picture</label>
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <small class="text-muted">Your uploaded ID picture for verification purposes.</small>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <img src="{{ user.id_picture|image_url }}" alt="ID Picture" class="img-thumbnail" style="max-width: 120px; max-height: 120px;">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.first_name.label(class="form-label") }}
+                                {{ profile_form.first_name(class="form-control", value=user.first_name) }}
+                                {% for error in profile_form.first_name.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.last_name.label(class="form-label") }}
+                                {{ profile_form.last_name(class="form-control", value=user.last_name) }}
+                                {% for error in profile_form.last_name.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.username.label(class="form-label") }}
+                                {{ profile_form.username(class="form-control", value=user.username) }}
+                                {% for error in profile_form.username.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.email.label(class="form-label") }}
+                                {{ profile_form.email(class="form-control", value=user.email) }}
+                                {% for error in profile_form.email.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ profile_form.phone.label(class="form-label") }}
+                            {{ profile_form.phone(class="form-control", value=user.phone or '') }}
+                            {% for error in profile_form.phone.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Country</label>
+                                <select class="form-control" id="country_select">
+                                    <option value="Philippines" {% if user.country == 'Philippines' or not user.country %}selected{% endif %}>Philippines</option>
+                                    <option value="United States" {% if user.country == 'United States' %}selected{% endif %}>United States</option>
+                                    <option value="Canada" {% if user.country == 'Canada' %}selected{% endif %}>Canada</option>
+                                    <option value="United Kingdom" {% if user.country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
+                                    <option value="Australia" {% if user.country == 'Australia' %}selected{% endif %}>Australia</option>
+                                    <option value="Other" {% if user.country and user.country not in ['Philippines', 'United States', 'Canada', 'United Kingdom', 'Australia'] %}selected{% endif %}>Other</option>
+                                </select>
+                                {{ profile_form.country(class="form-control d-none", value=user.country or 'Philippines', id="country_hidden") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Province</label>
+                                <select class="form-control" id="province_select" data-initial-value="{{ user.province or '' }}">
+                                    <option value="">Select Province</option>
+                                </select>
+                                {{ profile_form.province(class="form-control d-none", value=user.province or '', id="province_hidden") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">City/Municipality</label>
+                                <select class="form-control" id="city_select" data-initial-value="{{ user.city or '' }}">
+                                    <option value="">Select City/Municipality</option>
+                                </select>
+                                {{ profile_form.city(class="form-control d-none", value=user.city or '', id="city_hidden") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Barangay</label>
+                                <select class="form-control" id="barangay_select" data-initial-value="{{ user.barangay or '' }}">
+                                    <option value="">Select Barangay</option>
+                                </select>
+                                {{ profile_form.barangay(class="form-control d-none", value=user.barangay or '', id="barangay_hidden") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.street.label(class="form-label") }}
+                                {{ profile_form.street(class="form-control", value=user.street or '', id="street_input") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ profile_form.house_number.label(class="form-label") }}
+                                {{ profile_form.house_number(class="form-control", value=user.house_number or '', id="house_number_input") }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ profile_form.address.label(class="form-label") }}
+                            {{ profile_form.address(class="form-control", rows=3, value=user.address or '') }}
+                            <small class="text-muted">This is an editable full address used as fallback; your structured address will auto-fill forms.</small>
+                            {% for error in profile_form.address.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        {{ profile_form.submit(class="btn btn-primary") }}
+                    </form>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Change Password -->
+            <div class="settings-section">
+                <div class="section-title">
+                    <i class="fas fa-lock"></i> Change Password
+                </div>
+                <div>
+                    <form method="POST">
+                        {{ password_form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ password_form.current_password.label(class="form-label") }}
+                            {{ password_form.current_password(class="form-control", id="current_password") }}
+                            {% for error in password_form.current_password.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ password_form.new_password.label(class="form-label") }}
+                                {{ password_form.new_password(class="form-control", id="new_password") }}
+                                <small class="text-muted">At least 6 characters</small>
+                                {% for error in password_form.new_password.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ password_form.confirm_password.label(class="form-label") }}
+                                {{ password_form.confirm_password(class="form-control", id="confirm_password") }}
+                                {% for error in password_form.confirm_password.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {{ password_form.submit(class="btn btn-warning", id="password_submit") }}
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Account Summary -->
+            <div class="summary-card">
+                <div class="section-title">
+                    <i class="fas fa-user-circle"></i> Account Summary
+                </div>
+                <div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Account Type</small>
+                            <p class="fw-bold mb-0">
+                                <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'success' if user.role == 'seller' else 'primary' }}">
+                                    {{ user.role.title() }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Status</small>
+                            <p class="fw-bold mb-0">
+                                <span class="badge bg-{{ 'success' if user.status == 'active' else 'warning' if user.status == 'inactive' else 'danger' }}">
+                                    {{ user.status.title() }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Member Since</small>
+                        <p class="mb-0">{{ user.created_at|format_datetime('%B %Y') }}</p>
+                    </div>
+                    
+                    {% if user.role == 'user' %}
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('user.view_cart') }}" class="btn btn-outline-brown btn-sm">
+                                <i class="fas fa-shopping-cart"></i> View Cart
+                            </a>
+                            <a href="{{ url_for('user.orders') }}" class="btn btn-outline-brown btn-sm">
+                                <i class="fas fa-box"></i> My Orders
+                            </a>
+                            <a href="{{ url_for('public.browse_products') }}" class="btn btn-outline-brown btn-sm">
+                                <i class="fas fa-shopping-bag"></i> Shop Products
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="summary-card">
+                <div class="section-title">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </div>
+                <div>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('public.browse_products') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/address-cascade.js') }}"></script>
+<script>
+// Password validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('new_password').value;
+    const confirmPassword = this.value;
+    this.setCustomValidity(password !== confirmPassword ? 'Passwords do not match' : '');
+});
+
+document.getElementById('new_password').addEventListener('input', function() {
+    const confirmPassword = document.getElementById('confirm_password');
+    if (confirmPassword.value) confirmPassword.dispatchEvent(new Event('input'));
+});
+
+// Philippine Address Cascading
+(function() {
+    const addressEl = document.getElementById('address') || document.querySelector('textarea[name="address"]');
+    const countrySelect = document.getElementById('country_select');
+    const provinceSelect = document.getElementById('province_select');
+    const citySelect = document.getElementById('city_select');
+    const barangaySelect = document.getElementById('barangay_select');
+    
+    // Initialize address cascade
+    const addressCascade = new PhilippineAddressCascade({
+        countrySelect: countrySelect,
+        provinceSelect: provinceSelect,
+        citySelect: citySelect,
+        barangaySelect: barangaySelect,
+        streetInput: document.getElementById('street_input'),
+        houseNumberInput: document.getElementById('house_number_input'),
+        autoFillAddress: true,
+        addressTextarea: addressEl
+    });
+    
+    // Set initial values from user data
+    addressCascade.setInitialValues({
+        province: '{{ user.province or "" }}',
+        city: '{{ user.city or "" }}',
+        barangay: '{{ user.barangay or "" }}',
+        street: '{{ user.street or "" }}',
+        houseNumber: '{{ user.house_number or "" }}'
+    });
+
+    // Sync hidden form fields before submission
+    const profileForm = document.querySelector('form');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            // Sync all hidden fields with visible selects
+            const countryHidden = document.getElementById('country_hidden');
+            const provinceHidden = document.getElementById('province_hidden');
+            const cityHidden = document.getElementById('city_hidden');
+            const barangayHidden = document.getElementById('barangay_hidden');
+            
+            if (countryHidden && countrySelect) {
+                countryHidden.value = countrySelect.value;
+            }
+            if (provinceHidden && provinceSelect) {
+                provinceHidden.value = provinceSelect.value;
+            }
+            if (cityHidden && citySelect) {
+                cityHidden.value = citySelect.value;
+            }
+            if (barangayHidden && barangaySelect) {
+                barangayHidden.value = barangaySelect.value;
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

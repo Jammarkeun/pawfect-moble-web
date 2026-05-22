@@ -1,0 +1,193 @@
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Inventory Valuation Report{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-0">💰 Inventory Valuation Report</h2>
+                <p class="text-muted">Cost analysis and profit margin overview</p>
+            </div>
+            <a href="{{ url_for('seller.inventory') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Inventory
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Total Cost Value</h6>
+                    <h3 class="card-title mb-0">{{ (summary.total_cost_value or 0)|currency }}</h3>
+                    <small>Investment in inventory</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Total Retail Value</h6>
+                    <h3 class="card-title mb-0">{{ (summary.total_retail_value or 0)|currency }}</h3>
+                    <small>Potential revenue</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Potential Profit</h6>
+                    <h3 class="card-title mb-0">{{ ((summary.total_retail_value or 0) - (summary.total_cost_value or 0))|currency }}</h3>
+                    <small>If all sold at retail</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Total Units</h6>
+                    <h3 class="card-title mb-0">{{ summary.total_units or 0 }}</h3>
+                    <small>{{ summary.total_products or 0 }} products</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Valuation Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Product-Level Valuation</h5>
+                </div>
+                <div class="card-body">
+                    {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="valuationTable">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Stock Qty</th>
+                                    <th>Cost Price</th>
+                                    <th>Retail Price</th>
+                                    <th>Cost Value</th>
+                                    <th>Retail Value</th>
+                                    <th>Margin %</th>
+                                    <th>Potential Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.sku or '-' }}</td>
+                                    <td>{{ product.category_name or '-' }}</td>
+                                    <td>{{ product.stock_quantity }}</td>
+                                    <td>{{ (product.cost_price or 0)|currency }}</td>
+                                    <td>{{ product.retail_price|currency }}</td>
+                                    <td>{{ (product.cost_value or 0)|currency }}</td>
+                                    <td>{{ (product.retail_value or 0)|currency }}</td>
+                                    <td>
+                                        {% set margin = product.margin_percent or 0 %}
+                                        {% if margin >= 40 %}
+                                        <span class="badge bg-success">{{ "%.1f"|format(margin) }}%</span>
+                                        {% elif margin >= 20 %}
+                                        <span class="badge bg-info">{{ "%.1f"|format(margin) }}%</span>
+                                        {% elif margin >= 10 %}
+                                        <span class="badge bg-warning">{{ "%.1f"|format(margin) }}%</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ "%.1f"|format(margin) }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ ((product.retail_value or 0) - (product.cost_value or 0))|currency }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active fw-bold">
+                                    <td colspan="6">TOTAL</td>
+                                    <td>{{ (summary.total_cost_value or 0)|currency }}</td>
+                                    <td>{{ (summary.total_retail_value or 0)|currency }}</td>
+                                    <td>
+                                        {% set avg_margin = ((summary.total_retail_value or 0) - (summary.total_cost_value or 0)) / (summary.total_retail_value or 1) * 100 %}
+                                        {{ "%.1f"|format(avg_margin) }}%
+                                    </td>
+                                    <td>{{ ((summary.total_retail_value or 0) - (summary.total_cost_value or 0))|currency }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No active products with inventory to display.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Export Options</h6>
+                    <button class="btn btn-outline-primary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-outline-success" onclick="exportTableToCSV()">
+                        <i class="fas fa-file-csv"></i> Export to CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportTableToCSV() {
+    const table = document.getElementById('valuationTable');
+    let csv = [];
+    
+    // Get headers
+    const headers = [];
+    table.querySelectorAll('thead th').forEach(th => headers.push(th.textContent));
+    csv.push(headers.join(','));
+    
+    // Get rows
+    table.querySelectorAll('tbody tr').forEach(tr => {
+        const row = [];
+        tr.querySelectorAll('td').forEach(td => {
+            row.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+        });
+        csv.push(row.join(','));
+    });
+    
+    // Download
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventory_valuation_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+}
+</script>
+
+<style>
+@media print {
+    .btn, .card-header { display: none !important; }
+    body { font-size: 12px; }
+}
+</style>
+{% endblock %}
+
+
+

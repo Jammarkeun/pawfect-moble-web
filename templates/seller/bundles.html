@@ -1,0 +1,157 @@
+{% extends "seller/seller_base.html" %}
+
+{% block title %}Manage Bundles - Seller Dashboard{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-box-open"></i> Product Bundles</h2>
+                    <p class="text-muted">Create combo deals and bundle offers</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('seller.products') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Back to Products
+                    </a>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBundleModal">
+                        <i class="fas fa-plus"></i> Create Bundle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bundles List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if bundles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Bundle Name</th>
+                                        <th>Items</th>
+                                        <th>Price</th>
+                                        <th>Discount</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bundle in bundles %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ bundle.name }}</strong>
+                                                {% if bundle.description %}
+                                                    <br><small class="text-muted">{{ bundle.description[:50] }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ bundle.item_count }} items</td>
+                                            <td>₱{{ "%.2f"|format(bundle.bundle_price) }}</td>
+                                            <td>
+                                                {% if bundle.discount_percentage %}
+                                                    <span class="badge bg-success">{{ bundle.discount_percentage }}% OFF</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if bundle.status == 'active' else 'secondary' }}">
+                                                    {{ bundle.status }}
+                                                </span>
+                                            </td>
+                                            <td>{{ bundle.created_at|format_datetime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('seller.delete_bundle', bundle_id=bundle.id) }}" class="d-inline"
+                                                      onsubmit="return confirm('Delete this bundle?')">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Bundles Yet</h4>
+                            <p class="text-muted mb-4">Create product bundles to offer combo deals to your customers.</p>
+                            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addBundleModal">
+                                <i class="fas fa-plus"></i> Create Your First Bundle
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bundle Modal -->
+<div class="modal fade" id="addBundleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Bundle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('seller.add_bundle') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                <input type="hidden" name="bundle_items" id="bundle_items" value="[]" />
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Bundle Name *</label>
+                        <input type="text" class="form-control" name="bundle_name" required 
+                               placeholder="e.g., Dog Starter Pack">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="bundle_description" rows="2"
+                                  placeholder="Describe what's included in this bundle..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bundle Price (₱) *</label>
+                            <input type="number" class="form-control" name="bundle_price" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Discount % (optional)</label>
+                            <input type="number" class="form-control" name="discount_percentage" 
+                                   step="0.01" min="0" max="100">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Add Products to Bundle</label>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> After creating the bundle, you can manage items in the edit view.
+                            For now, specify product IDs as JSON: <code>[{"product_id": 1, "quantity": 1}, {"product_id": 2, "quantity": 2}]</code>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Bundle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

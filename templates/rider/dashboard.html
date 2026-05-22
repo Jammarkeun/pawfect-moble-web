@@ -1,0 +1,754 @@
+{% extends "base.html" %}
+
+{% block title %}Rider Dashboard - Pawfect Finds{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+/* Base styles for better visibility */
+body {
+    color: #2d3748;
+    background-color: #f7fafc;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+    background-color: #fff;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+}
+
+.card-header h6 {
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.card-body {
+    padding: 1.25rem 1.5rem;
+    color: #4a5568;
+}
+
+/* Improve text contrast */
+.text-gray-800 {
+    color: #2d3748 !important;
+}
+
+.text-muted {
+    color: #718096 !important;
+}
+
+/* Chart containers */
+.chart-area, .chart-pie {
+    position: relative;
+    height: 20rem;
+    width: 100%;
+}
+
+/* Chat notification badge */
+.chat-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table styles */
+.table {
+    color: #2d3748;
+    font-size: 0.875rem;
+}
+
+.table th {
+    background-color: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #4a5568;
+}
+
+.table td {
+    border-color: #edf2f7;
+    vertical-align: middle;
+}
+
+/* Progress bars */
+.progress {
+    height: 0.5rem;
+    background-color: #edf2f7;
+    border-radius: 0.25rem;
+}
+
+/* Status badges */
+.badge {
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+}
+
+/* Buttons */
+.btn {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Sidebar styling */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background-color: #4E342E;
+    color: white;
+    padding-top: 56px;
+    padding-left: 15px;
+    padding-right: 15px;
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    z-index: 1400;
+    transform: translateX(0);
+}
+
+.sidebar.collapsed {
+    transform: translateX(-260px);
+}
+
+.sidebar.show {
+    transform: translateX(0);
+}
+
+/* On mobile, hide by default */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0) !important;
+        z-index: 1200 !important;
+    }
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-header h3 {
+    color: white !important;
+    font-size: 1.3rem;
+    margin: 8px 0 5px 0;
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sidebar-nav li {
+    margin-bottom: 5px !important;
+}
+
+.sidebar-nav a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 12px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: none !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transform: translateX(5px) !important;
+}
+
+.sidebar-nav i {
+    margin-right: 10px !important;
+    width: 18px !important;
+    text-align: center !important;
+    font-size: 0.95rem !important;
+}
+
+/* Main content */
+.main-content {
+    margin-left: 260px;
+    padding: 80px 20px 40px 20px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: 0;
+}
+
+.rider-main-inner {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sidebar-toggle-btn {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #4E342E !important;
+    font-size: 1.4rem !important;
+    width: 56px !important;
+    height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 2000 !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(78, 52, 46, 0.1) !important;
+    color: #2d2416 !important;
+}
+
+.sidebar-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-toggle-btn i,
+.sidebar:not(.show) .sidebar-toggle-btn i {
+    transform: rotate(0deg);
+}
+
+.sidebar.show .sidebar-toggle-btn i {
+    transform: rotate(90deg);
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Connection Status Badge -->
+<span id="connection-status" class="badge bg-secondary">Connecting...</span>
+
+<!-- Location Permission Modal -->
+<div class="modal fade" id="locationPermissionModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-location-dot"></i> Enable Location Tracking
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    To provide accurate delivery tracking to customers, we need access to your device's location.
+                </p>
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Why?</strong> Customers will see your real-time location on their order tracking map while you're making deliveries.
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-lock"></i>
+                    <strong>Privacy:</strong> Your location is only shared with customers who have orders assigned to you during delivery.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="skipLocationBtn">
+                    <i class="fas fa-times"></i> Skip for Now
+                </button>
+                <button type="button" class="btn btn-info" id="allowLocationBtn">
+                    <i class="fas fa-check"></i> Allow Location Access
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="rider-dashboard dashboard-layout" data-rider-id="{{ rider_id }}">
+<div id="availableOrdersSection" data-rider-id="{{ rider_id }}">
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+                        <div class="sidebar-header">
+                            <i class="fas fa-motorcycle fa-2x mb-2" style="color: rgba(255, 255, 255, 0.9);"></i>
+                            <h3>Pawfect Finds</h3>
+                            <small>Rider Dashboard</small>
+                        </div>
+                        <nav class="sidebar-nav">
+                            <span class="nav-category">MAIN</span>
+                            <li>
+                                <a href="{{ url_for('rider.dashboard') }}" class="{{ 'active' if request.endpoint == 'rider.dashboard' }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#availableOrdersContainer">
+                                    <i class="fas fa-box-open"></i> Available Orders
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('rider.my_deliveries') }}" class="{{ 'active' if request.endpoint == 'rider.my_deliveries' }}">
+                                    <i class="fas fa-truck-fast"></i> My Deliveries
+                                </a>
+                            </li>
+                            <span class="nav-category">COMMUNICATION</span>
+                            <li>
+                                <a href="{{ url_for('chat.my_rooms') }}" class="{{ 'active' if request.endpoint == 'chat.my_rooms' }} position-relative">
+                                    <i class="fas fa-comments"></i> Messages
+                                    <span id="message-badge" class="chat-badge" data-chat-badge="global" data-badge-display="flex" style="display: none;">0</span>
+                                </a>
+                            </li>
+                            <span class="nav-category">ACCOUNT</span>
+                            <li>
+                                <a href="{{ url_for('user.settings') }}"><i class="fas fa-user-cog"></i> Profile</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('auth.logout') }}"><i class="fas fa-right-from-bracket"></i> Logout</a>
+                            </li>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+    <div class="rider-main-inner">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-motorcycle text-primary" style="color:#4E342E;"></i> Rider Dashboard
+        </h2>
+                    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Deliveries</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_deliveries or 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed This Month</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_deliveries or 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">This Month Earnings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱{{ "%.2f"|format(monthly_earnings or 0.00) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-peso-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Pending Payout</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱{{ "%.2f"|format(pending_payout or 0.00) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('rider.earnings') }}" class="btn btn-sm btn-success" title="View Earnings">
+                                <i class="fas fa-hand-holding-usd fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Average Rating</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.1f"|format(avg_rating or 0) }}/5</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Activity Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold">Last 7 Days Activity</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div style="position: relative; height: 300px; width: 100%; background-color: #ffffff;">
+                        <canvas id="riderChart" style="display: block !important;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Orders Section -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold">Available Orders</h6>
+                    <button id="refreshOrdersBtn" class="btn btn-sm btn-outline-secondary" title="Refresh available orders">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Orders Loading State -->
+                    <div id="ordersLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 mb-0 text-dark">Loading orders...</p>
+                    </div>
+                    
+                    <!-- No Orders Message -->
+                    <div id="noOrdersMessage" class="text-center py-5" style="display: none;">
+                        <div class="mb-3">
+                            <i class="fas fa-inbox fa-4x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">No Orders</h5>
+                        <p class="text-muted mb-0 small">Check back soon!</p>
+                    </div>
+                    
+                    <!-- Orders Container -->
+                    <div id="availableOrdersContainer" class="p-3" style="display: none;">
+                        <!-- Orders will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Card Template -->
+    <template id="orderCardTemplate">
+        <div class="card mb-3 order-card" data-order-id="">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0 fw-bold">Order #<span class="order-number"></span></h6>
+                    <small class="text-muted order-date"></small>
+                </div>
+                <div>
+                    <span class="badge bg-success me-2">New</span>
+                    <button class="btn btn-sm btn-primary accept-order-btn">
+                        <i class="fas fa-check-circle me-1"></i> Accept
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-shopping-bag text-primary me-2"></i>
+                            <div>
+                                <div class="text-muted small">Items</div>
+                                <div class="fw-bold order-item-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-tag text-primary me-2"></i>
+                            <div>
+                                <div class="text-muted small">Total</div>
+                                <div class="fw-bold">₱<span class="order-amount">0.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <div>
+                                <div class="text-muted small">Location</div>
+                                <div class="fw-bold order-distance">N/A</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top">
+                    <button class="btn btn-sm btn-outline-secondary me-2 view-details-btn">
+                        <i class="fas fa-eye me-1"></i> View Details
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary me-2 view-map-btn" data-order-id="">
+                        <i class="fas fa-map-marked-alt me-1"></i> View on Map
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order #<span id="modalOrderNumber"></span> Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsContent">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary accept-order-modal-btn">
+                        <i class="fas fa-check-circle me-1"></i> Accept This Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container for Notifications -->
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
+
+    </div> <!-- /rider-main-inner -->
+</main> <!-- /main-content -->
+</div> <!-- /availableOrdersSection -->
+</div> <!-- /dashboard-layout -->
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Socket.IO -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Leaflet Routing Machine (optional) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar toggle functionality
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const toggleButton = document.getElementById('sidebarToggleBtn');
+    
+    if (toggleButton && sidebar) {
+        // Toggle sidebar on button click
+        toggleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (window.innerWidth < 992) {
+                // Mobile: slide in/out
+                sidebar.classList.toggle('show');
+                document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : 'auto';
+            } else {
+                // Desktop: collapse/expand
+                sidebar.classList.toggle('collapsed');
+                if (mainContent) {
+                    mainContent.classList.toggle('expanded');
+                }
+            }
+        });
+        
+        // Close sidebar when clicking outside (mobile only)
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth < 992) {
+                const isClickInside = sidebar.contains(e.target) || toggleButton.contains(e.target);
+                if (!isClickInside && sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        });
+        
+        // Close sidebar when clicking a nav link
+        const navLinks = sidebar.querySelectorAll('.sidebar-nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    sidebar.classList.remove('show');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 992) {
+                sidebar.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+    
+    async function loadAnalytics() {
+        try {
+            const res = await fetch('/rider/analytics-data', { credentials: 'same-origin' });
+            const data = await res.json();
+            if (!data.success) return;
+            const ctx = document.getElementById('riderChart');
+            if (!ctx) return;
+            const labels = (data.deliveries_by_day || []).map(d => d.day);
+            const counts = (data.deliveries_by_day || []).map(d => d.count);
+            const earnings = (data.earnings_by_day || []).map(d => d.amount);
+            new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels, 
+                    datasets: [
+                        { 
+                            label: 'Deliveries', 
+                            data: counts, 
+                            backgroundColor: '#8d6e63',
+                            borderColor: '#6d4c41',
+                            borderWidth: 1
+                        },
+                        { 
+                            label: 'Earnings (₱)', 
+                            data: earnings, 
+                            type: 'line', 
+                            yAxisID: 'y1', 
+                            borderColor: '#5d4037', 
+                            backgroundColor: 'rgba(93,64,55,0.2)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#2d3748',
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#4a5568'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }, 
+                        y1: { 
+                            beginAtZero: true, 
+                            position: 'right',
+                            ticks: {
+                                color: '#4a5568'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#4a5568'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            console.warn('Analytics load failed', e);
+        }
+    }
+
+    loadAnalytics();
+});
+</script>
+<script src="{{ url_for('static', filename='js/rider_available_orders.js') }}"></script>
+
+<!-- Rider Location Tracking -->
+<script src="{{ url_for('static', filename='js/rider_location_tracking.js') }}"></script>
+
+{% endblock %}

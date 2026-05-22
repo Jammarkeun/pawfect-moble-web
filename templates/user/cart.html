@@ -1,0 +1,902 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - Pawfect Finds{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #A1887F;
+    --beige: #F5E9DC;
+    --white: #FFFFFF;
+}
+
+body {
+    background-color: #f9f5f0;
+    color: var(--brown-dark);
+    font-family: 'Poppins', sans-serif;
+}
+
+.cart-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    color: var(--brown-dark);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.page-header i {
+    color: var(--brown-primary);
+    margin-right: 0.5rem;
+}
+
+.page-header .text-muted {
+    color: #8B7E74 !important;
+}
+
+h5, h6 {
+    color: var(--white);
+    margin: 0;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    background-color: var(--white);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+    color: var(--white);
+    border-radius: 0;
+    padding: 1.25rem 1.5rem;
+    border: none;
+}
+
+.card-header i {
+    margin-right: 0.5rem;
+}
+
+.card-body {
+    background-color: var(--white);
+    color: var(--brown-dark);
+    padding: 1.5rem;
+}
+
+.text-muted {
+    color: #8B7E74 !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+    border: none;
+    color: var(--white);
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--brown-dark) 0%, #3d251f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(109, 76, 65, 0.4);
+}
+
+.btn-outline-primary {
+    color: var(--brown-primary);
+    border: 2px solid var(--brown-primary);
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--brown-primary);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3);
+}
+
+.btn-outline-danger {
+    border: 2px solid #c62828;
+    color: #c62828;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+    background-color: #c62828;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+}
+
+.input-group .btn-outline-secondary {
+    color: var(--brown-dark);
+    border: 2px solid #E8DED3;
+    background: var(--white);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.input-group .btn-outline-secondary:hover {
+    background-color: var(--brown-primary);
+    border-color: var(--brown-primary);
+    color: var(--white);
+}
+
+.form-control {
+    border: 2px solid #E8DED3;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: var(--brown-primary);
+    box-shadow: 0 0 0 0.2rem rgba(109, 76, 65, 0.15);
+    outline: none;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--brown-light), transparent);
+    margin: 1.5rem 0;
+}
+
+.text-primary {
+    color: var(--brown-primary) !important;
+}
+
+.btn-lg {
+    border-radius: 10px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Order Summary Styling */
+.summary-section {
+    background: #FAFAFA;
+    padding: 1.25rem;
+    border-radius: 10px;
+}
+
+.total-amount {
+    background: linear-gradient(135deg, var(--beige) 0%, #EDE0D0 100%);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 90px;
+}
+
+/* ========== CART ITEMS STYLING ========== */
+.cart-item-row {
+    padding: 1.25rem;
+    background: #FAFAFA;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.cart-item-row:hover {
+    background-color: #F5EBDD;
+    border-color: var(--brown-light);
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.1);
+}
+
+.cart-item-image {
+    border: 2px solid #E8DED3;
+    border-radius: 10px;
+    background: var(--white);
+    padding: 0.25rem;
+}
+
+.cart-item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brown-dark);
+    margin-bottom: 0.25rem;
+}
+
+.cart-quantity-control {
+    max-width: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cart-quantity-control .btn {
+    padding: 0.5rem 0.75rem;
+    min-width: 40px;
+}
+
+.cart-quantity-control input {
+    font-weight: 600;
+    border-left: 2px solid #E8DED3;
+    border-right: 2px solid #E8DED3;
+}
+
+.cart-item-total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brown-primary);
+}
+
+.cart-remove-btn {
+    white-space: nowrap;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+    .cart-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .cart-item-row {
+        padding: 1rem !important;
+    }
+    
+    .cart-item-name {
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+    
+    .cart-item-image {
+        min-height: 60px !important;
+    }
+    
+    .cart-quantity-control {
+        max-width: 100%;
+    }
+    
+    .cart-quantity-control .btn {
+        padding: 0.5rem;
+        min-width: 40px;
+        font-size: 0.9rem;
+    }
+    
+    .cart-quantity-control input {
+        font-size: 0.95rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .cart-item-total {
+        font-size: 1rem;
+    }
+    
+    .cart-remove-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Stack quantity and remove button vertically on very small screens */
+    @media (max-width: 360px) {
+        .cart-item-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 991px) {
+    .cart-quantity-control {
+        max-width: 120px;
+    }
+}
+
+/* Desktop optimizations */
+@media (max-width: 991px) {
+    .sticky-sidebar {
+        position: relative;
+        top: 0;
+        margin-top: 2rem;
+    }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (hover: none) and (pointer: coarse) {
+    .cart-quantity-control .btn,
+    .cart-remove-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <div class="page-header">
+        <h2><i class="fas fa-shopping-cart"></i> Your Shopping Cart</h2>
+        <p class="text-muted">Review your items and proceed to checkout when ready</p>
+    </div>
+    
+    {% if cart_items %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-shopping-bag"></i> Cart Items ({{ cart_items|length }})</h5>
+                    </div>
+                    <div class="card-body">
+{% for item in cart_items %}
+                            <div class="cart-item-row row align-items-center g-3 cart-item-selectable" 
+                                 data-cart-id="{{ item.id }}" 
+                                 data-stock="{{ item.stock_quantity }}"
+                                 data-item-id="{{ item.id }}"
+                                 data-item-name="{{ item.name }}"
+                                 data-item-price="{{ item.price }}"
+                                 data-item-qty="{{ item.quantity }}"
+                                 style="cursor: pointer; transition: background-color 0.2s ease; padding: 0.75rem;">
+                                
+                                <!-- Mobile: Full width image, stacked layout -->
+                                <div class="col-3 col-sm-2 col-md-2">
+                                    <img src="{{ item.image_url or 'https://via.placeholder.com/100x80?text=Product' }}" 
+                                         class="img-fluid rounded cart-item-image" 
+                                         alt="{{ item.name }}" 
+                                         style="width: 100%; height: auto; min-height: 100px; object-fit: contain; object-position: center;">
+                                </div>
+                                
+                                <!-- Product info - takes remaining space on mobile -->
+                                <div class="col-8 col-sm-9 col-md-3">
+                                    <h6 class="mb-1 cart-item-name">{{ item.name }}</h6>
+                                    <p class="text-muted small mb-1">By {{ item.seller_username }}</p>
+                                    {% if item.variant_id %}
+                                        <p class="text-info small mb-1"><i class="fas fa-layer-group"></i> Variant: 
+                                            <span class="badge bg-info">{{ item.variant_name if item.variant_name else 'Variant #' + (item.variant_id|string) }}</span>
+                                        </p>
+                                    {% endif %}
+                                    <p class="text-primary fw-bold mb-0 d-md-none" data-price="{{ item.price }}">{{ item.price|currency }}</p>
+                                    {% if item.stock_quantity <= 0 %}
+                                        <small class="text-danger d-block mt-1"><i class="fas fa-exclamation-triangle"></i> Out of Stock</small>
+                                    {% elif item.stock_quantity <= 5 %}
+                                        <small class="text-warning d-block mt-1"><i class="fas fa-exclamation-circle"></i> Only {{ item.stock_quantity }} left</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Price - hidden on mobile, shown on desktop -->
+                                <div class="col-md-2 d-none d-md-block">
+                                    <p class="text-primary fw-bold mb-0" data-price="{{ item.price }}">{{ item.price|currency }}</p>
+                                </div>
+                                
+                                <!-- Quantity controls - full width on mobile -->
+                                <div class="col-7 col-sm-6 col-md-3">
+                                    <form method="POST" action="{{ url_for('user.update_cart') }}" class="cart-quantity-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                                        <input type="hidden" name="cart_id" value="{{ item.id }}">
+                                        <div class="input-group cart-quantity-control">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                    onclick="decreaseQuantity('{{ item.id }}')">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="form-control form-control-sm text-center" 
+                                                   id="qty_{{ item.id }}" name="quantity" 
+                                                   value="{{ item.quantity }}" 
+                                                   min="0" 
+                                                   max="{{ item.stock_quantity }}"
+                                                   data-stock="{{ item.stock_quantity }}">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                    onclick="increaseQuantity('{{ item.id }}')"
+                                                    {% if item.stock_quantity <= item.quantity %}disabled title="Out of stock"{% endif %}>
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        {% if item.stock_quantity <= item.quantity %}
+                                            <small class="text-danger d-block mt-1"><i class="fas fa-exclamation-triangle"></i> Maximum quantity reached</small>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                                
+                                <!-- Subtotal and remove button -->
+                                <div class="col-5 col-sm-6 col-md-3 text-end cart-item-actions">
+                                    <p class="fw-bold mb-2 cart-item-total" data-item-total="{{ item.id }}">{{ (item.price * item.quantity)|currency }}</p>
+                                    <a href="{{ url_for('user.remove_from_cart', cart_id=item.id) }}" 
+                                       class="btn btn-outline-danger btn-sm cart-remove-btn"
+                                       onclick="return confirm('Remove this item from cart?')">
+                                        <i class="fas fa-trash"></i>
+                                        <span class="d-none d-sm-inline ms-1">Remove</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card sticky-sidebar">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-receipt"></i> Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-section">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-boxes"></i> Total Items</span>
+                                <span class="fw-semibold" id="selected-item-qty">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-receipt"></i> Subtotal</span>
+                                <span class="fw-semibold" id="selected-item-subtotal">₱0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-truck"></i> Shipping Fee</span>
+                                <span class="fw-semibold" id="selected-item-shipping">₱50.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="total-amount">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 1.1rem;">Total</strong>
+                                <strong class="text-primary" id="selected-item-total" style="font-size: 1.5rem;">₱0.00</strong>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary btn-lg w-100 mb-2" id="checkout-btn" disabled>
+                            <i class="fas fa-credit-card"></i> Proceed to Checkout (Select items)
+                        </button>
+                        
+                        <a href="{{ url_for('public.browse_products') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-shopping-bag"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Your cart is empty</h4>
+                        <p class="text-muted mb-4">Add some products to your cart to get started!</p>
+                        <a href="{{ url_for('public.browse_products') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-bag"></i> Start Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function formatCurrency(amount) {
+    return '₱' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+}
+
+function updateItemTotal(cartId, price, quantity) {
+    const total = price * quantity;
+    const totalElement = document.querySelector(`[data-item-total="${cartId}"]`);
+    if (totalElement) {
+        totalElement.textContent = formatCurrency(total);
+    }
+    return total;
+}
+
+function updateCartTotals() {
+    let subtotal = 0;
+    let itemCount = 0;
+    document.querySelectorAll('.cart-item-row').forEach(row => {
+        const cartId = row.dataset.cartId;
+        const checkbox = row.querySelector('.cart-item-checkbox');
+        
+        // Only count if checked
+        if (checkbox && checkbox.checked) {
+            const priceElements = row.querySelectorAll('[data-price]');
+            const quantityInput = document.getElementById('qty_' + cartId);
+            
+            if (priceElements.length > 0 && quantityInput) {
+                const price = parseFloat(priceElements[0].dataset.price);
+                const quantity = parseInt(quantityInput.value) || 0;
+                const itemTotal = updateItemTotal(cartId, price, quantity);
+                subtotal += itemTotal;
+                itemCount++;
+            }
+        }
+    });
+    
+    // Calculate shipping fee based on delivery fee (50 pesos)
+    const shippingFee = 50;
+    const grandTotal = subtotal + shippingFee;
+    
+    console.log('Subtotal:', subtotal, 'Shipping:', shippingFee, 'Total:', grandTotal, 'Items:', itemCount);
+    
+    // Update summary totals
+    const subtotalElement = document.getElementById('cart-subtotal');
+    const shippingElement = document.getElementById('cart-shipping');
+    const grandTotalElement = document.getElementById('cart-grand-total');
+    
+    if (subtotalElement) subtotalElement.textContent = formatCurrency(subtotal);
+    if (shippingElement) {
+        if (shippingFee === 0) {
+            shippingElement.textContent = 'FREE';
+            shippingElement.classList.add('text-success');
+        } else {
+            shippingElement.textContent = formatCurrency(shippingFee);
+            shippingElement.classList.remove('text-success');
+        }
+    }
+    if (grandTotalElement) grandTotalElement.textContent = formatCurrency(grandTotal);
+    
+    // IMPORTANT: Also update the order summary in real-time
+    updateOrderSummaryTotal();
+}
+
+function updateOrderSummaryTotal() {
+    let totalQuantity = 0;
+    let grandTotal = 0;
+    
+    // Loop through all checked items and calculate totals
+    document.querySelectorAll('.cart-item-checkbox:checked').forEach(checkbox => {
+        const itemRow = checkbox.closest('.cart-item-selectable');
+        const cartId = itemRow.dataset.cartId;
+        const quantityInput = itemRow.querySelector(`#qty_${cartId}`);
+        const itemQty = quantityInput ? parseInt(quantityInput.value) || 0 : 0;
+        const itemPrice = parseFloat(itemRow.dataset.itemPrice);
+        const itemTotal = itemPrice * itemQty;
+        
+        totalQuantity += itemQty;
+        grandTotal += itemTotal;
+    });
+    
+    const shippingFee = 50;
+    const total = grandTotal + shippingFee;
+    
+    // Update the order summary display
+    document.getElementById('selected-item-qty').textContent = totalQuantity;
+    document.getElementById('selected-item-subtotal').textContent = formatCurrency(grandTotal);
+    document.getElementById('selected-item-shipping').textContent = formatCurrency(shippingFee);
+    document.getElementById('selected-item-total').textContent = formatCurrency(total);
+}
+
+function submitQuantityUpdate(cartId) {
+    const input = document.getElementById('qty_' + cartId);
+    if (!input) {
+        return Promise.resolve();
+    }
+    const form = input.closest('form');
+    if (!form) {
+        return Promise.resolve();
+    }
+    const formData = new FormData(form);
+    
+    return fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Cart update failed');
+            }
+            return response.json().catch(() => ({}));
+        })
+        .catch(err => {
+            console.error('Failed to update cart:', err);
+            throw err;
+        });
+}
+
+function increaseQuantity(cartId) {
+    const input = document.getElementById('qty_' + cartId);
+    const currentValue = parseInt(input.value) || 0;
+    const stockQuantity = parseInt(input.getAttribute('data-stock')) || 0;
+    
+    // Check if stock is available
+    if (stockQuantity <= 0) {
+        showStockAlert('This product is out of stock.');
+        return;
+    }
+    
+    if (currentValue >= stockQuantity) {
+        showStockAlert(`Only ${stockQuantity} item(s) available in stock.`);
+        // Disable the plus button
+        const plusButton = input.nextElementSibling;
+        if (plusButton) {
+            plusButton.disabled = true;
+            plusButton.title = 'Out of stock';
+        }
+        return;
+    }
+    
+    input.value = currentValue + 1;
+    
+    // Re-enable plus button if it was disabled
+    const plusButton = input.nextElementSibling;
+    if (plusButton && currentValue + 1 < stockQuantity) {
+        plusButton.disabled = false;
+        plusButton.title = '';
+    }
+    
+    // Update cart item total immediately
+    const itemRow = input.closest('.cart-item-selectable');
+    const priceElement = itemRow.querySelector('[data-price]');
+    if (priceElement) {
+        const price = parseFloat(priceElement.dataset.price);
+        updateItemTotal(cartId, price, currentValue + 1);
+    }
+    
+    // Update order summary immediately
+    updateOrderSummaryTotal();
+    
+    // Update selected items display in real-time if item is checked
+    const checkbox = itemRow.querySelector('.cart-item-checkbox');
+    if (checkbox && checkbox.checked) {
+        updateSelection();
+    }
+    
+    // Save to database after a short delay
+    clearTimeout(window.cartUpdateTimeout);
+    window.cartUpdateTimeout = setTimeout(() => submitQuantityUpdate(cartId), 800);
+}
+
+function showStockAlert(message) {
+    // Create or get alert container
+    let alertContainer = document.getElementById('stock-alert-container');
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = 'stock-alert-container';
+        alertContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+        document.body.appendChild(alertContainer);
+    }
+    
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-warning alert-dismissible fade show';
+    alert.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    alertContainer.appendChild(alert);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+function decreaseQuantity(cartId) {
+    const input = document.getElementById('qty_' + cartId);
+    const currentValue = parseInt(input.value);
+    if (currentValue > 0) {
+        input.value = currentValue - 1;
+        
+        // Update cart item total immediately
+        const itemRow = input.closest('.cart-item-selectable');
+        const priceElement = itemRow.querySelector('[data-price]');
+        if (priceElement) {
+            const price = parseFloat(priceElement.dataset.price);
+            updateItemTotal(cartId, price, currentValue - 1);
+        }
+        
+        // Update order summary immediately
+        updateOrderSummaryTotal();
+        
+        // Update selected items display in real-time if item is checked
+        const checkbox = itemRow.querySelector('.cart-item-checkbox');
+        if (checkbox && checkbox.checked) {
+            updateSelection();
+        }
+        
+        // Save to database after a short delay
+        clearTimeout(window.cartUpdateTimeout);
+        window.cartUpdateTimeout = setTimeout(() => submitQuantityUpdate(cartId), 800);
+    }
+}
+
+// Handle manual input changes
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedItemIds = new Set();
+    
+    // Add checkboxes to cart items for multiple selection
+    document.querySelectorAll('.cart-item-selectable').forEach(itemRow => {
+        const cartId = itemRow.dataset.cartId;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'cart-item-checkbox form-check-input';
+        checkbox.value = cartId;
+        checkbox.dataset.cartId = cartId;
+        checkbox.style.marginRight = '12px';
+        checkbox.style.width = '20px';
+        checkbox.style.height = '20px';
+        checkbox.style.cursor = 'pointer';
+        
+        const firstChild = itemRow.firstChild;
+        itemRow.insertBefore(checkbox, firstChild);
+        
+        // Handle checkbox change
+        checkbox.addEventListener('change', function(e) {
+            e.stopPropagation();
+            updateSelection();
+        });
+        
+        // Make row clickable to toggle checkbox
+        itemRow.addEventListener('click', function(e) {
+            // Don't toggle if clicking on quantity controls or remove button
+            if (e.target.closest('.cart-quantity-control') || e.target.closest('.cart-remove-btn') || e.target.closest('.cart-item-checkbox')) {
+                return;
+            }
+            
+            checkbox.checked = !checkbox.checked;
+            updateSelection();
+        });
+    });
+    
+    function updateSelection() {
+        selectedItemIds.clear();
+        let totalQuantity = 0;
+        
+        document.querySelectorAll('.cart-item-checkbox:checked').forEach(checkbox => {
+            const itemRow = checkbox.closest('.cart-item-selectable');
+            const cartId = itemRow.dataset.cartId;
+            
+            // Get current quantity from the input field (not from data attribute which is stale)
+            const quantityInput = itemRow.querySelector(`#qty_${cartId}`);
+            const itemQty = quantityInput ? parseInt(quantityInput.value) || 0 : parseInt(itemRow.dataset.itemQty);
+            
+            selectedItemIds.add(cartId);
+            totalQuantity += itemQty; // Total quantity of products
+        });
+
+        // Single source of truth for summary totals.
+        updateOrderSummaryTotal();
+        
+        // Update checkout button
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (selectedItemIds.size > 0) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerHTML = `<i class="fas fa-credit-card"></i> Proceed to Checkout (${totalQuantity} item${totalQuantity > 1 ? 's' : ''})`;
+        } else {
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> Proceed to Checkout (Select items)';
+        }
+    }
+
+    // Initialize summary state on first load.
+    updateOrderSummaryTotal();
+    
+    document.querySelectorAll('input[name="quantity"]').forEach(input => {
+        input.addEventListener('input', function() {
+            const cartId = this.id.replace('qty_', '');
+            const stockQuantity = parseInt(this.getAttribute('data-stock')) || 0;
+            const enteredValue = parseInt(this.value) || 0;
+            
+            // Validate against stock
+            if (enteredValue > stockQuantity) {
+                showStockAlert(`Only ${stockQuantity} item(s) available in stock.`);
+                this.value = stockQuantity;
+                // Disable plus button
+                const plusButton = this.nextElementSibling;
+                if (plusButton) {
+                    plusButton.disabled = true;
+                    plusButton.title = 'Out of stock';
+                }
+            } else if (enteredValue < stockQuantity) {
+                // Re-enable plus button if quantity is below stock
+                const plusButton = this.nextElementSibling;
+                if (plusButton) {
+                    plusButton.disabled = false;
+                    plusButton.title = '';
+                }
+            }
+            
+            updateCartTotals();
+            // Update order summary for selected items
+            updateSelection();
+            // Save to database after a short delay
+            clearTimeout(window.cartUpdateTimeout);
+            window.cartUpdateTimeout = setTimeout(() => submitQuantityUpdate(cartId), 1200);
+        });
+        
+        // Also check on page load to disable buttons if needed
+        const stockQuantity = parseInt(input.getAttribute('data-stock')) || 0;
+        const currentValue = parseInt(input.value) || 0;
+        if (currentValue >= stockQuantity && stockQuantity > 0) {
+            const plusButton = input.nextElementSibling;
+            if (plusButton) {
+                plusButton.disabled = true;
+                plusButton.title = 'Out of stock';
+            }
+        }
+    });
+    
+    // Handle checkout button click
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', async function() {
+            if (selectedItemIds.size === 0) {
+                alert('Please select at least one item to proceed to checkout');
+                return;
+            }
+
+            // Persist latest quantities for selected items before opening checkout.
+            const originalLabel = checkoutBtn.innerHTML;
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing checkout...';
+
+            try {
+                clearTimeout(window.cartUpdateTimeout);
+                const updatePromises = Array.from(selectedItemIds).map(itemId => submitQuantityUpdate(itemId));
+                await Promise.all(updatePromises);
+            } catch (error) {
+                alert('Unable to sync cart quantities. Please try again.');
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalLabel;
+                return;
+            }
+            
+            // Create a form to submit the selected items
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for("user.checkout") }}';
+            
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = '{{ csrf_token_value }}';
+            form.appendChild(csrfInput);
+            
+            // Add all selected item IDs
+            selectedItemIds.forEach(itemId => {
+                const itemInput = document.createElement('input');
+                itemInput.type = 'hidden';
+                itemInput.name = 'selected_items';
+                itemInput.value = itemId;
+                form.appendChild(itemInput);
+            });
+
+            // Include a client-side snapshot so checkout summary mirrors cart exactly.
+            const snapshot = [];
+            selectedItemIds.forEach(itemId => {
+                const row = document.querySelector(`.cart-item-selectable[data-cart-id="${itemId}"]`);
+                if (!row) return;
+                const qtyInput = row.querySelector(`#qty_${itemId}`);
+                const qty = qtyInput ? (parseInt(qtyInput.value, 10) || 0) : 0;
+                const unitPrice = parseFloat(row.dataset.itemPrice || '0') || 0;
+                snapshot.push({ id: parseInt(itemId, 10), qty: qty, unit_price: unitPrice });
+            });
+
+            const snapshotInput = document.createElement('input');
+            snapshotInput.type = 'hidden';
+            snapshotInput.name = 'selected_snapshot';
+            snapshotInput.value = JSON.stringify(snapshot);
+            form.appendChild(snapshotInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+});
+</script>
+{% endblock %}

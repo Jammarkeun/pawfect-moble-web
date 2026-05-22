@@ -1,0 +1,1311 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Pawfect Finds{% endblock %}
+
+{% block content %}
+<!-- Product data for recently viewed tracking -->
+<div data-product-info='{"id": {{ product.id }}, "name": "{{ product.name|replace('"', '\\"') }}", "price": {{ product.price }}, "image_url": "{{ product.image_url|image_url }}", "category": "{{ product.category_name }}", "seller": "{{ product.seller_username }}"}' style="display:none;"></div>
+<style>
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #A1887F;
+    --beige: #F5EBDD;
+    --white: #FFFFFF;
+}
+
+/* General Page Styling */
+body {
+    background-color:var(--beige);
+    font-family: 'Poppins', sans-serif;
+    color: var(--brown-dark);
+}
+
+.product-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    background-color: var(--white);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+    color: var(--white);
+    border: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.card-title, h2, h3, h4, h6 {
+    color: var(--brown-dark);
+    font-weight: 600;
+}
+
+h2.card-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background: var(--white);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb a {
+    color: var(--brown-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: var(--brown-dark);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--brown-dark);
+}
+
+/* Badges */
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, var(--beige) 0%, #E8DED3 100%) !important;
+    color: var(--brown-dark) !important;
+    border: none;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
+}
+
+/* Price Styling */
+.price-section {
+    background: linear-gradient(135deg, var(--beige) 0%, #F0E4D7 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.text-primary {
+    color: var(--brown-primary) !important;
+}
+
+.price-section h3 {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Seller Info */
+.seller-info {
+    background: #FAFAFA;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--brown-primary);
+    margin-bottom: 1.5rem;
+}
+
+/* Description Section */
+.description-section {
+    background: #F8F8F8;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.description-section h5 {
+    color: var(--brown-dark);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Rating Stars */
+.rating-section {
+    background: #FFFAF0;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 2px solid #FFE4B5;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-dark) 100%);
+    border: none;
+    color: var(--white);
+    padding: 0.875rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--brown-dark) 0%, #3d251f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(109, 76, 65, 0.4);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--brown-primary);
+    color: var(--brown-primary);
+    background-color: transparent;
+    padding: 0.875rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: var(--brown-primary) !important;
+    border-color: var(--brown-primary) !important;
+    color: var(--white) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3) !important;
+}
+
+.btn-lg {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    border-radius: 10px;
+}
+
+.btn:focus, .btn:active, .btn:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Variation Buttons Styling */
+#variationDisplaySection {
+    background: #FAFAFA;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #E8DED3;
+    margin-bottom: 1.5rem !important;
+}
+
+#variationDisplaySection h5 {
+    color: var(--brown-dark);
+    font-weight: 700;
+    margin-bottom: 1rem !important;
+}
+
+.variation-button {
+    background: #FFFFFF;
+    border: 2px solid #D0BFAA;
+    color: var(--brown-dark);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 100px;
+}
+
+.variation-button img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #E8DED3;
+}
+
+.variation-button:hover {
+    border-color: var(--brown-primary);
+    background: #F5F5F5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.variation-button.active {
+    background: #DC3545;
+    color: #FFFFFF;
+    border-color: #DC3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.variation-button.active img {
+    border-color: #FFFFFF;
+    box-shadow: 0 0 0 3px #DC3545;
+}
+
+.variation-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Quantity Input */
+.quantity-section {
+    background: #FAFAFA;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.actions-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.actions-row .quantity-section {
+    margin-bottom: 0;
+    flex: 0 0 auto;
+    padding: 1rem 1.25rem;
+}
+
+.actions-row .buttons-group {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    min-width: 300px;
+}
+
+.form-control {
+    border: 2px solid #E8DED3;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+}
+
+.form-control:focus {
+    border-color: var(--brown-primary);
+    box-shadow: 0 0 0 0.2rem rgba(109, 76, 65, 0.15);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--brown-dark);
+    margin-bottom: 0.5rem;
+}
+
+/* Alerts */
+.alert-info {
+    background: linear-gradient(135deg, #FFF9F0 0%, var(--beige) 100%);
+    color: var(--brown-dark);
+    border: none;
+    border-left: 4px solid var(--brown-primary);
+    border-radius: 10px;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    color: #2e7d32;
+    border: none;
+    border-left: 4px solid #4caf50;
+    border-radius: 10px;
+}
+
+/* Product Image Gallery */
+.product-image-card {
+    background: #F8F8F8;
+    padding: 1rem;
+}
+
+.product-detail-gallery {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--white);
+    padding: 1rem;
+}
+
+.detail-gallery-container {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    align-items: center;
+}
+
+.detail-gallery-image {
+    display: block;
+    flex: 0 0 100%;
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    min-height: 280px;
+    object-fit: contain;
+    object-position: center;
+    margin: 0 auto;
+    padding: 0;
+    background: var(--white);
+    box-sizing: border-box;
+}
+
+.detail-gallery-prev,
+.detail-gallery-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(78, 52, 46, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.detail-gallery-prev:hover,
+.detail-gallery-next:hover {
+    background: var(--brown-dark);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.detail-gallery-prev {
+    left: 15px;
+}
+
+.detail-gallery-next {
+    right: 15px;
+}
+
+.detail-gallery-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.detail-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--brown-dark);
+    transition: all 0.3s ease;
+}
+
+.detail-indicator:hover {
+    transform: scale(1.2);
+}
+
+/* Thumbnail Navigation */
+.thumbnail-nav {
+    display: flex;
+    gap: 12px;
+    padding: 1rem;
+    overflow-x: auto;
+    background: #F8F8F8;
+    border-radius: 0 0 12px 12px;
+}
+
+.thumbnail {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    cursor: pointer;
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    background: var(--white);
+    padding: 0.25rem;
+}
+
+.thumbnail:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Reviews Section */
+.review-item {
+    background: #FAFAFA;
+    padding: 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.review-item:hover {
+    border-color: var(--brown-light);
+    background: #F5EBDD;
+}
+
+.review-form-section {
+    background: linear-gradient(135deg, #FFF9F0 0%, #F5EBDD 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.form-select {
+    border: 2px solid #E8DED3;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+}
+
+.form-select:focus {
+    border-color: var(--brown-primary);
+    box-shadow: 0 0 0 0.2rem rgba(109, 76, 65, 0.15);
+    outline: none;
+}
+
+/* Related Section */
+.related-section {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.related-section h4 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .product-detail-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .detail-gallery-image {
+        height: 400px;
+    }
+    
+    .btn-lg {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    h2.card-title {
+        font-size: 1.5rem;
+    }
+    
+    .price-section h3 {
+        font-size: 1.75rem;
+    }
+    
+    .actions-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .actions-row .quantity-section {
+        margin-bottom: 1rem;
+    }
+    
+    .actions-row .buttons-group {
+        width: 100%;
+    }
+}
+</style>
+
+<div class="product-detail-container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('public.landing') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.browse_products') }}">Products</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.category_products', category_id=product.category_id) }}">{{ product.category_name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Product Details -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card product-image-card">
+                {% if product.images and product.images|length > 0 %}
+                    <!-- Main Image Gallery -->
+                    <div class="product-detail-gallery" style="position: relative; overflow: hidden;">
+                        <div class="detail-gallery-container" style="display: flex; transition: transform 0.4s ease;">
+                            {% for img in product.images %}
+                                <img src="{{ img.image_url|image_url }}"
+                                     class="detail-gallery-image"
+                                     alt="{{ product.name }}">
+                            {% endfor %}
+                        </div>
+                        {% if product.images|length > 1 %}
+                            <button class="detail-gallery-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="detail-gallery-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="detail-gallery-indicators">
+                                {% for img in product.images %}
+                                    <span class="detail-indicator {{ 'active' if loop.index0 == 0 }}" style="background: {{ 'white' if loop.index0 == 0 else 'rgba(255,255,255,0.5)' }};"></span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Thumbnail Navigation -->
+                    {% if product.images|length > 1 %}
+                        <div class="thumbnail-nav">
+                            {% for img in product.images %}
+                                <img src="{{ img.image_url|image_url }}"
+                                     class="thumbnail {{ 'active' if loop.index0 == 0 }}"
+                                     data-index="{{ loop.index0 }}"
+                                     alt="Thumbnail {{ loop.index }}"
+                                     style="border: {{ '3px solid var(--brown-dark)' if loop.index0 == 0 else '2px solid var(--brown-light)' }};">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <img src="{{ product.image_url|image_url }}" class="card-img-top" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">{{ product.name }}</h2>
+                    
+                    {% if rating_info.count > 0 %}
+                        <div class="rating-section">
+                            <div class="d-flex align-items-center">
+                                {% for i in range(5) %}
+                                    <i class="fas fa-star {{ 'text-warning' if i < rating_info.average else 'text-muted' }}" style="font-size: 1.25rem;"></i>
+                                {% endfor %}
+                                <span class="ms-2 fw-semibold">{{ rating_info.average }}/5 <span class="text-muted">({{ rating_info.count }} reviews)</span></span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="price-section">
+                        <h3 class="text-primary mb-2">{{ product.price|apply_discount|php }}
+                            <small class="text-muted text-decoration-line-through ms-2" style="font-size: 1.25rem;">{{ product.price|php }}</small>
+                        </h3>
+                        <span class="badge bg-success"><i class="fas fa-tag"></i> Save ₱50</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-secondary me-2"><i class="fas fa-tag"></i> {{ product.category_name }}</span>
+                        {% if product.stock_quantity <= 0 %}
+                            <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                        {% elif product.stock_quantity <= 5 %}
+                            <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock ({{ product.stock_quantity }} left)</span>
+                        {% else %}
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> In Stock ({{ product.stock_quantity }} available)</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="seller-info">
+                        <i class="fas fa-store"></i> Sold by <strong>{{ product.seller_username }}</strong>
+                        {% if product.seller_verified %}
+                            <i class="fas fa-check-circle text-success ms-1" title="Verified Seller"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="description-section">
+                        <h5><i class="fas fa-info-circle"></i> Description</h5>
+                        <p class="mb-0">{{ product.description or 'No description available.' }}</p>
+                    </div>
+
+                    <!-- Variation Display Section -->
+                    <div id="variationDisplaySection" class="my-4" style="display: none;">
+                        <h5 class="mb-3"><i class="fas fa-layer-group"></i> Variation</h5>
+                        <div id="variationButtonsContainer" class="d-flex flex-wrap gap-2">
+                            <!-- Variation buttons will be populated here by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    {% if current_user and current_user.role == 'user' %}
+                        {% if product.stock_quantity > 0 %}
+                            <!-- Variation Selection Modal -->
+                            <div class="modal fade" id="variationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-layer-group"></i> Select Variation
+                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body" id="variationModalBody">
+                                            <p class="text-muted">Loading variations...</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-primary" id="confirmVariationBtn">
+                                                <i class="fas fa-check"></i> Continue
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{{ url_for('user.add_to_cart') }}" id="addToCartForm">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="variant_id" id="variant_id" value="">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-auto">
+                                        <label for="quantity" class="form-label"><i class="fas fa-shopping-basket"></i> Quantity</label>
+                                        <input type="number" class="form-control" id="quantity" name="quantity"
+                                               value="1" min="1" max="{{ product.stock_quantity }}" style="width: 120px;">
+                                    </div>
+                                    <div class="col">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="addToCartBtn">
+                                            <i class="fas fa-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </div>
+                                    <div class="col-auto">
+                                    </div>
+                                </div>
+                            </form>
+                            <form method="POST" action="{{ url_for('wishlist.add_to_wishlist', product_id=product.id) }}" style="margin-top: -3.7rem; margin-left: calc(120px + 1rem + 200px);">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                                <button type="submit" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-heart"></i> Add to Wishlist
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-danger btn-lg w-100 mb-2" disabled>
+                                <i class="fas fa-times"></i> Out of Stock
+                            </button>
+                            <form method="POST" action="{{ url_for('wishlist.add_to_wishlist', product_id=product.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                                <button type="submit" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="fas fa-heart"></i> Add to Wishlist
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            {% if not current_user %}
+                                <a href="{{ url_for('auth.login', force='1') }}" class="alert-link">Login</a> to add items to your cart.
+                            {% else %}
+                                Only customers can purchase products.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-comments"></i> Customer Reviews</h6>
+                </div>
+                <div class="card-body">
+                    {% if current_user and current_user.role == 'user' %}
+                        <div class="mb-4">
+                            {% if user_review %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> <strong>You have already reviewed this product.</strong>
+                                    <div class="mt-2">
+                                        <strong>Your rating:</strong>
+                                        {% for i in range(5) %}
+                                            <i class="fas fa-star {{ 'text-warning' if i < user_review.rating else 'text-muted' }}"></i>
+                                        {% endfor %}
+                                        {% if user_review.comment %}
+                                            <p class="mt-2 mb-0"><em>"{{ user_review.comment }}"</em></p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="review-form-section">
+                                    <h6 class="mb-3"><i class="fas fa-star"></i> Add Your Review</h6>
+                                    <form method="POST" action="{{ url_for('review.add_review') }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-3">
+                                                <label for="rating" class="form-label">Rating *</label>
+                                                <select class="form-select" name="rating" required>
+                                                    <option value="">Select rating...</option>
+                                                    <option value="5">⭐⭐⭐⭐⭐ 5 Stars - Excellent</option>
+                                                    <option value="4">⭐⭐⭐⭐ 4 Stars - Good</option>
+                                                    <option value="3">⭐⭐⭐ 3 Stars - Average</option>
+                                                    <option value="2">⭐⭐ 2 Stars - Poor</option>
+                                                    <option value="1">⭐ 1 Star - Terrible</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="comment" class="form-label">Comment (Optional)</label>
+                                                <input type="text" class="form-control" name="comment" 
+                                                       placeholder="Share your experience with this product...">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="fas fa-paper-plane"></i> Submit Review
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if reviews %}
+                        <div class="reviews-list">
+                            {% for review in reviews %}
+                                <div class="review-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <strong class="me-3" style="font-size: 1.05rem;">{{ review.first_name }} {{ review.last_name[0] }}.</strong>
+                                            <div class="rating">
+                                                {% for i in range(5) %}
+                                                    <i class="fas fa-star {{ 'text-warning' if i < review.rating else 'text-muted' }}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <small class="text-muted"><i class="fas fa-calendar-alt"></i> {{ review.created_at|format_datetime('%b %d, %Y') }}</small>
+                                    </div>
+                                    {% if review.comment %}
+                                        <p class="mb-0" style="color: #5c4033;">{{ review.comment }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No reviews yet. Be the first to review this product!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="related-section">
+        <h4><i class="fas fa-heart"></i> You May Also Like</h4>
+        <p class="text-muted mb-4">Discover more amazing products in {{ product.category_name }}</p>
+        <a href="{{ url_for('public.category_products', category_id=product.category_id) }}" 
+           class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-th-large"></i> View More in {{ product.category_name }}
+        </a>
+    </div>
+</div>
+
+<script>
+// Product Detail Gallery
+const detailGallery = document.querySelector('.product-detail-gallery');
+if (detailGallery) {
+    let currentIndex = 0;
+    const container = detailGallery.querySelector('.detail-gallery-container');
+    const images = detailGallery.querySelectorAll('.detail-gallery-image');
+    const indicators = detailGallery.querySelectorAll('.detail-indicator');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const prevBtn = detailGallery.querySelector('.detail-gallery-prev');
+    const nextBtn = detailGallery.querySelector('.detail-gallery-next');
+    
+    if (container && images.length > 1) {
+        function updateGallery() {
+            container.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            // Update indicators
+            indicators.forEach((ind, idx) => {
+                ind.style.background = idx === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
+                ind.classList.toggle('active', idx === currentIndex);
+            });
+            
+            // Update thumbnails
+            thumbnails.forEach((thumb, idx) => {
+                if (idx === currentIndex) {
+                    thumb.style.border = '3px solid var(--brown-dark)';
+                    thumb.classList.add('active');
+                } else {
+                    thumb.style.border = '2px solid var(--brown-light)';
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+        
+        // Previous button
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                updateGallery();
+            });
+        }
+        
+        // Next button
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % images.length;
+                updateGallery();
+            });
+        }
+        
+        // Indicator click
+        indicators.forEach((ind, idx) => {
+            ind.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentIndex = idx;
+                updateGallery();
+            });
+        });
+        
+        // Thumbnail click
+        thumbnails.forEach((thumb, idx) => {
+            thumb.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentIndex = idx;
+                updateGallery();
+            });
+        });
+        
+        // Touch/swipe support
+        let startX = 0;
+        let isDragging = false;
+        
+        detailGallery.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        });
+        
+        detailGallery.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+        
+        detailGallery.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    currentIndex = (currentIndex + 1) % images.length;
+                } else {
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                }
+                updateGallery();
+            }
+            isDragging = false;
+        });
+        
+        // Mouse drag support
+        detailGallery.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isDragging = true;
+            detailGallery.style.cursor = 'grabbing';
+        });
+        
+        detailGallery.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+        
+        detailGallery.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            const endX = e.clientX;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    currentIndex = (currentIndex + 1) % images.length;
+                } else {
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                }
+                updateGallery();
+            }
+            isDragging = false;
+            detailGallery.style.cursor = 'grab';
+        });
+        
+        detailGallery.addEventListener('mouseleave', () => {
+            isDragging = false;
+            detailGallery.style.cursor = 'grab';
+        });
+        
+        // Set initial cursor
+        detailGallery.style.cursor = 'grab';
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                updateGallery();
+            } else if (e.key === 'ArrowRight') {
+                currentIndex = (currentIndex + 1) % images.length;
+                updateGallery();
+            }
+        });
+    }
+}
+
+// Product Variations Handling
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = {{ product.id }};
+    const addToCartForm = document.getElementById('addToCartForm');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const variationModalElement = document.getElementById('variationModal');
+    const confirmVariationBtn = document.getElementById('confirmVariationBtn');
+    const variantIdInput = document.getElementById('variant_id');
+    let variationModal = null;
+    let selectedVariant = null;
+    let productVariations = null;
+
+    // Initialize Bootstrap modal only if element exists
+    if (variationModalElement) {
+        variationModal = new bootstrap.Modal(variationModalElement);
+    }
+
+    // Fetch product variations when page loads
+    async function loadVariations() {
+        try {
+            const response = await fetch(`/seller/product/${productId}/variations`);
+            
+            if (!response.ok) {
+                console.warn(`Variations API returned ${response.status}`);
+                return;
+            }
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.error('Failed to parse variations response:', e);
+                return;
+            }
+            
+            if (data && data.success) {
+                productVariations = data;
+                console.log('✓ Product variations loaded successfully:', productVariations);
+                
+                // Display variations on page if they exist
+                if (data.has_variations && data.variants && data.variants.length > 0) {
+                    console.log(`✓ Product has ${data.variants.length} variations, displaying them`);
+                    displayVariationsOnPage();
+                } else {
+                    console.log('✓ Product has no variations');
+                }
+            } else {
+                console.log('✓ API response indicates no variations or not a success response');
+            }
+        } catch (error) {
+            console.error('✗ Error loading variations:', error);
+            console.error('Stack trace:', error.stack);
+        }
+    }
+
+    // Display variations as buttons on the product page
+    function displayVariationsOnPage() {
+        const variationSection = document.getElementById('variationDisplaySection');
+        const container = document.getElementById('variationButtonsContainer');
+        
+        if (!variationSection || !container) {
+            console.warn('✗ Variation display elements not found in DOM');
+            return;
+        }
+        
+        container.innerHTML = '';
+        const variants = productVariations.variants || [];
+        
+        if (variants.length === 0) {
+            console.warn('✗ No variants to display');
+            return;
+        }
+        
+        console.log(`Rendering ${variants.length} variation buttons`);
+        
+        // Display all variant names with images
+        variants.forEach((variant, index) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'variation-button';
+            btn.dataset.variantId = variant.id;
+            btn.dataset.variantName = variant.name;
+            
+            // Build button content
+            let content = '<div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">';
+            
+            // Add image if available
+            if (variant.image_url) {
+                // Handle variant image URL - apply the same logic as the Flask image_url_filter
+                let imageUrl = variant.image_url;
+                
+                // If it doesn't start with http://, https://, or /static/, process it
+                if (!imageUrl.match(/^(https?:\/\/|\/static\/)/)) {
+                    // For uploads/ paths, convert to /static/uploads/
+                    if (imageUrl.startsWith('uploads/')) {
+                        imageUrl = '/static/' + imageUrl;
+                    } else if (imageUrl.startsWith('/uploads/')) {
+                        imageUrl = '/static' + imageUrl;
+                    } else {
+                        // Fallback for other paths
+                        imageUrl = '/static/' + imageUrl;
+                    }
+                }
+                
+                content += `<img src="${imageUrl}" alt="${variant.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #E8DED3;" onerror="this.parentElement.innerHTML='<div style=\"width: 80px; height: 80px; background-color: #f0f0f0; border-radius: 6px; border: 1px solid #E8DED3; display: flex; align-items: center; justify-content: center;\"><i class=\"fas fa-image\" style=\"color: #ccc;\"></i></div>';">`;
+            } else {
+                content += `<div style="width: 80px; height: 80px; background-color: #f0f0f0; border-radius: 6px; border: 1px solid #E8DED3; display: flex; align-items: center; justify-content: center;"><i class="fas fa-image" style="color: #ccc;"></i></div>`;
+            }
+            content += `<small style="text-align: center; font-weight: 600;">${variant.name}</small>`;
+            content += '</div>';
+            
+            btn.innerHTML = content;
+            
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                selectVariation(this, variants);
+            });
+            
+            container.appendChild(btn);
+            console.log(`✓ Added variation button: ${variant.name}`);
+        });
+        
+        // Show the variation section
+        variationSection.style.display = 'block';
+        console.log('✓ Variation display section is now visible');
+    }
+
+    // Handle variation selection on page
+    function selectVariation(btn, variants) {
+        // Remove active state from all buttons
+        document.querySelectorAll('.variation-button').forEach(b => {
+            b.classList.remove('active');
+        });
+        
+        // Add active state to clicked button
+        btn.classList.add('active');
+        
+        // Set selected variant by ID
+        if (btn.dataset.variantId) {
+            const variantId = parseInt(btn.dataset.variantId);
+            selectedVariant = variants.find(v => parseInt(v.id) === variantId);
+            variantIdInput.value = selectedVariant.id.toString();
+            console.log('✓ Variant selected on page:', selectedVariant.name, 'ID:', selectedVariant.id);
+        }
+    }
+
+    // Call on page load
+    loadVariations();
+
+    // Flag to allow form submission without showing modal
+    let allowFormSubmit = false;
+
+    // Handle add to cart form submission
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(e) {
+            // If we're submitting from the modal confirm button, don't intercept
+            if (allowFormSubmit) {
+                console.log('[SUBMIT_HANDLER] allowFormSubmit is true, submitting normally');
+                allowFormSubmit = false;  // Reset for next submission
+                return;  // Let the form submit normally
+            }
+            
+            e.preventDefault();
+            console.log('Form submitted - checking variations');
+            console.log('productVariations:', productVariations);
+            console.log('selectedVariant:', selectedVariant);
+            console.log('variantIdInput.value:', variantIdInput.value);
+
+            // Check if product has variations
+            if (productVariations && productVariations.has_variations && productVariations.variants && productVariations.variants.length > 0) {
+                console.log('✓ Product has variations');
+                // If variation already selected, submit directly
+                if (selectedVariant && variantIdInput.value && variantIdInput.value !== '') {
+                    console.log('✓ Variation already selected, submitting form');
+                    // Set flag and re-submit
+                    allowFormSubmit = true;
+                    this.submit();
+                } else {
+                    // Show variation selection modal
+                    console.log('✗ No variation selected, showing modal');
+                    showVariationModal();
+                }
+            } else {
+                // Submit form directly if no variations
+                // Clear variant_id if no variations exist
+                variantIdInput.value = '';
+                console.log('✓ Product has no variations, submitting form');
+                // Set flag and re-submit
+                allowFormSubmit = true;
+                this.submit();
+            }
+        });
+    }
+
+    // Show variation selection modal
+    function showVariationModal() {
+        if (!variationModal) {
+            alert('Variation modal not available');
+            return;
+        }
+        
+        if (!productVariations || !productVariations.variants) {
+            alert('Error loading product variations');
+            return;
+        }
+
+        const variants = productVariations.variants;
+        const modalBody = document.getElementById('variationModalBody');
+        
+        if (!modalBody) {
+            alert('Modal body not found');
+            return;
+        }
+        
+        let html = '<div class="variation-selector">';
+        
+        // Always show all variants with images in modal
+        html += '<div class="mb-4">';
+        html += '<h6 class="mb-3"><i class="fas fa-cubes"></i> Available Variations</h6>';
+        html += '<div class="row g-3">';
+        
+        variants.forEach(variant => {
+            html += '<div class="col-6 col-md-4">';
+            html += `<button type="button" class="btn btn-outline-secondary variant-option w-100 d-flex flex-column align-items-center p-2" data-variant-id="${variant.id}" style="min-height: 140px;">`;
+            
+            // Add image if available
+            if (variant.image_url) {
+                // Handle variant image URL - apply the same logic as the Flask image_url_filter
+                let imageUrl = variant.image_url;
+                
+                // If it doesn't start with http://, https://, or /static/, process it
+                if (!imageUrl.match(/^(https?:\/\/|\/static\/)/)) {
+                    // For uploads/ paths, convert to /static/uploads/
+                    if (imageUrl.startsWith('uploads/')) {
+                        imageUrl = '/static/' + imageUrl;
+                    } else if (imageUrl.startsWith('/uploads/')) {
+                        imageUrl = '/static' + imageUrl;
+                    } else {
+                        // Fallback for other paths
+                        imageUrl = '/static/' + imageUrl;
+                    }
+                }
+                
+                html += `<img src="${imageUrl}" alt="${variant.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 0.5rem;" onerror="this.parentElement.innerHTML='<div style=\"width: 80px; height: 80px; background-color: #f0f0f0; border-radius: 6px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center;\"><i class=\"fas fa-image\" style=\"color: #ccc;\"></i></div>';">`;
+            } else {
+                html += `<div style="width: 80px; height: 80px; background-color: #f0f0f0; border-radius: 6px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center;"><i class="fas fa-image" style="color: #ccc;"></i></div>`;
+            }
+            
+            html += `<small style="text-align: center;">${variant.name}</small>`;
+            html += '</button>';
+            html += '</div>';
+        });
+        
+        html += '</div></div>';
+        html += '</div>';
+        
+        modalBody.innerHTML = html;
+        console.log('✓ Modal populated with variations');
+        
+        // Add event listeners to variation buttons
+        document.querySelectorAll('.variant-option').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove previous selections
+                document.querySelectorAll('.variant-option').forEach(b => {
+                    b.classList.remove('active', 'btn-secondary');
+                    b.classList.add('btn-outline-secondary');
+                });
+                
+                // Mark current as selected
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-secondary', 'active');
+                
+                // Find matching variant
+                const variantId = parseInt(this.dataset.variantId);
+                selectedVariant = productVariations.variants.find(v => parseInt(v.id) === variantId);
+                console.log('✓ Variation selected in modal:', selectedVariant);
+                console.log('✓ Selected variant ID:', selectedVariant.id, 'Type:', typeof selectedVariant.id);
+            });
+        });
+        
+        variationModal.show();
+        console.log('✓ Variation modal shown');
+    }
+
+    // Handle confirm variation button
+    if (confirmVariationBtn) {
+        confirmVariationBtn.addEventListener('click', function() {
+            console.log('[CONFIRM_BTN] Clicked');
+            console.log('[CONFIRM_BTN] selectedVariant:', selectedVariant);
+            
+            if (!selectedVariant || !selectedVariant.id) {
+                alert('Please select a variation before continuing');
+                console.warn('✗ No variation selected when confirm was clicked');
+                return;
+            }
+            
+            // Set variant ID to the integer value
+            variantIdInput.value = selectedVariant.id.toString();
+            console.log('[CONFIRM_BTN] Setting variant ID:', selectedVariant.id);
+            console.log('[CONFIRM_BTN] Input value:', variantIdInput.value);
+            console.log('[CONFIRM_BTN] Form data before submit:');
+            console.log('  - product_id:', document.querySelector('input[name="product_id"]').value);
+            console.log('  - variant_id:', variantIdInput.value);
+            console.log('  - quantity:', document.querySelector('input[name="quantity"]').value);
+            
+            // Hide modal
+            variationModal.hide();
+            
+            // Submit the form with allow flag set
+            setTimeout(() => {
+                console.log('[CONFIRM_BTN] Setting allowFormSubmit=true and submitting form');
+                allowFormSubmit = true;
+                addToCartForm.submit();
+            }, 100);
+        });
+    }
+});
+</script>
+{% endblock %}

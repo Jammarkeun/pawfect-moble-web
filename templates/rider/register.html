@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Become a Rider - Pawfect Finds{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-motorcycle me-2"></i>Rider Registration</h3>
+                    <p class="mb-0 small">Join our delivery team and start earning!</p>
+                </div>
+                <div class="card-body">
+                    <!-- Registration Steps -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <div class="text-center flex-fill">
+                                    <div class="badge bg-primary rounded-circle p-3 mb-2">1</div>
+                                    <p class="small mb-0">Account Creation</p>
+                                </div>
+                                <div class="text-center flex-fill">
+                                    <div class="badge bg-secondary rounded-circle p-3 mb-2">2</div>
+                                    <p class="small mb-0 text-muted">Background Check</p>
+                                </div>
+                                <div class="text-center flex-fill">
+                                    <div class="badge bg-secondary rounded-circle p-3 mb-2">3</div>
+                                    <p class="small mb-0 text-muted">Training</p>
+                                </div>
+                                <div class="text-center flex-fill">
+                                    <div class="badge bg-secondary rounded-circle p-3 mb-2">4</div>
+                                    <p class="small mb-0 text-muted">Approval</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="riderRegistrationForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Personal Information -->
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.first_name.label(class="form-label") }}
+                                {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback">{{ form.first_name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.last_name.label(class="form-label") }}
+                                {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback">{{ form.last_name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback">{{ form.phone.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+
+                        <!-- Address Information -->
+                        <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.house_number.label(class="form-label") }}
+                                {{ form.house_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.street.label(class="form-label") }}
+                                {{ form.street(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.barangay.label(class="form-label") }}
+                                {{ form.barangay(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.city.label(class="form-label") }}
+                                {{ form.city(class="form-control" + (" is-invalid" if form.city.errors else "")) }}
+                                {% if form.city.errors %}
+                                    <div class="invalid-feedback">{{ form.city.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.province.label(class="form-label") }}
+                                {{ form.province(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.postal_code.label(class="form-label") }}
+                                {{ form.postal_code(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.country.label(class="form-label") }}
+                            {{ form.country(class="form-select" + (" is-invalid" if form.country.errors else "")) }}
+                            {% if form.country.errors %}
+                                <div class="invalid-feedback">{{ form.country.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Vehicle Information -->
+                        <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-motorcycle me-2"></i>Vehicle Information</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.vehicle_type.label(class="form-label") }}
+                                {{ form.vehicle_type(class="form-select" + (" is-invalid" if form.vehicle_type.errors else "")) }}
+                                {% if form.vehicle_type.errors %}
+                                    <div class="invalid-feedback">{{ form.vehicle_type.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.vehicle_plate_number.label(class="form-label") }}
+                                {{ form.vehicle_plate_number(class="form-control") }}
+                                <small class="text-muted">Optional</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.vehicle_model.label(class="form-label") }}
+                                {{ form.vehicle_model(class="form-control") }}
+                                <small class="text-muted">Optional</small>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload -->
+                        <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-file-upload me-2"></i>Required Documents</h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Document Requirements:</strong> Please upload clear, legible copies of your documents. Accepted formats: JPG, PNG, PDF.
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.government_id.label(class="form-label") }}
+                            {{ form.government_id(class="form-control" + (" is-invalid" if form.government_id.errors else "")) }}
+                            {% if form.government_id.errors %}
+                                <div class="invalid-feedback">{{ form.government_id.errors[0] }}</div>
+                            {% endif %}
+                            <small class="text-muted">Driver's License or National ID</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.profile_photo.label(class="form-label") }}
+                            {{ form.profile_photo(class="form-control" + (" is-invalid" if form.profile_photo.errors else "")) }}
+                            {% if form.profile_photo.errors %}
+                                <div class="invalid-feedback">{{ form.profile_photo.errors[0] }}</div>
+                            {% endif %}
+                            <small class="text-muted">Recent photo for identification purposes</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.vehicle_registration.label(class="form-label") }}
+                            {{ form.vehicle_registration(class="form-control") }}
+                            <small class="text-muted">Optional - OR/CR for vehicle verification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.clearance.label(class="form-label") }}
+                            {{ form.clearance(class="form-control") }}
+                            <small class="text-muted">Optional - NBI or Police Clearance for background check</small>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+
+                        <p class="text-center mt-3">
+                            <a href="{{ url_for('rider_registration.become_rider') }}">Back to Info Page</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Rider Agreement</h6>
+                <p>By registering as a rider, you agree to:</p>
+                <ul>
+                    <li>Provide accurate and truthful information</li>
+                    <li>Maintain valid documentation at all times</li>
+                    <li>Complete deliveries in a timely and professional manner</li>
+                    <li>Follow all platform guidelines and safety protocols</li>
+                    <li>Maintain your vehicle in good working condition</li>
+                    <li>Treat customers with respect and professionalism</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

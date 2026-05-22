@@ -1,0 +1,648 @@
+{% extends "seller/seller_base.html" %}
+
+{% block title %}Manage Orders - Seller Dashboard{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid" data-seller-id="{{ session.get('user_id') }}">
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-4">
+                <div class="mb-3">
+                    <h2><i class="fas fa-shopping-cart"></i> Order Management</h2>
+                    <p class="text-muted">View and manage customer orders for your products</p>
+                </div>
+                <form class="row g-3" method="get" id="orderFilters">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold">Search</label>
+                        <input type="text" name="search" class="form-control" value="{{ search_query or '' }}" placeholder="Order #, customer, email">
+                        <small class="form-text text-muted">Search by order ID, customer name, or email.</small>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All statuses</option>
+                            {% for s in statuses %}
+                                <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s.replace('_',' ').title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <button class="btn btn-warning w-100" type="submit" style="padding: 0.375rem 0.75rem; line-height: 1.5;">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                        {% if status or search_query %}
+                            <a href="{{ url_for('seller.orders') }}" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Orders List -->
+    <div class="row">
+        <div class="col-12">
+            {% if orders %}
+                {% for order in orders %}
+                    <div class="card mb-3 order-card" data-status="{{ order['status'] or 'pending' }}">
+                        <div class="card-header bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-1">
+                                        Order #{{ order['id'] }}
+                                        <span class="badge bg-{{ 'warning' if order['status'] == 'pending' else 'primary' if order['status'] == 'processing' else 'info' if order['status'] == 'shipped' else 'success' if order['status'] == 'delivered' else 'danger' }} ms-2">
+                                            {{ (order['status'] or 'pending').title() }}
+                                        </span>
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ order['created_at']|format_datetime('%B %d, %Y at %I:%M %p') if order['created_at'] else 'N/A' }}
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <h5 class="mb-1">{{ order['total_amount']|currency }}</h5>
+                                    <small class="text-muted">{{ order['items_count'] }} item(s)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Customer Information -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-user"></i> Customer Details</h6>
+                                    <p class="mb-1"><strong>{{ order['customer_first_name'] }} {{ order['customer_last_name'] }}</strong></p>
+                                    <p class="mb-1 text-muted">{{ order['customer_email'] }}</p>
+                                    {% if order['customer_phone'] %}
+                                        <p class="mb-0 text-muted">{{ order['customer_phone'] }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-map-marker-alt"></i> Shipping Address</h6>
+                                    <p class="mb-0 text-muted">
+                                        {{ order['shipping_address'] }}<br>
+                                        {{ order.get('shipping_city', 'N/A') }}, {{ order.get('shipping_state', '') }} {{ order.get('shipping_zip', '') }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mt-3 mt-md-0">
+                                </div>
+                            </div>
+
+                            <!-- Order Items -->
+                            <div class="mb-3">
+                                <h6><i class="fas fa-box"></i> Items Ordered</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in order['items'] %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="{{ item['image_url'] or 'https://via.placeholder.com/40x40?text=Product' }}"
+                                                                 class="me-2 rounded" style="width: 40px; height: 40px; object-fit: cover;"
+                                                                 alt="{{ item['name'] }}">
+                                                            <div>
+                                                                <span>{{ item['name'] }}</span>
+                                                                {% if item.get('variant_name') %}
+                                                                    <br><small class="text-info"><i class="fas fa-layer-group"></i> {{ item.get('variant_name') }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{ item['quantity'] }}</td>
+                                        <td>{{ item['price_at_time']|currency }}</td>
+                                        <td>{{ (item['quantity'] * item['price_at_time'])|currency }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Order Actions -->
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-warning btn-sm" onclick="viewOrderDetail('{{ order['id'] }}')">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </button>
+                                    {% if order['status'] == 'delivered' %}
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="viewPOD('{{ order['id'] }}')">
+                                        <i class="fas fa-clipboard-check"></i> View POD
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    {% if order['status'] in ['pending', 'confirmed', 'preparing'] %}
+                                        <form method="POST" action="{{ url_for('seller.update_order_status') }}" class="d-inline order-status-form">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="order_id" value="{{ order['id'] }}">
+                                            <select name="status" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="handleSellerStatusChange(this)">
+                                                <option value="" disabled selected>Change Status</option>
+                                                <option value="confirmed">Confirm order</option>
+                                                <option value="preparing">Mark as preparing</option>
+                                                <option value="cancelled" data-require-reason="1">Cancel order</option>
+                                            </select>
+                                        </form>
+                                    {% endif %}
+                                    {% if order['status'] == 'shipped' %}
+                                        <form method="POST" action="{{ url_for('seller.update_order_status') }}" class="d-inline" onsubmit="return confirm('Are you sure you want to mark this order as On the Way?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="order_id" value="{{ order['id'] }}">
+                                            <input type="hidden" name="status" value="on_the_way">
+                                            <button type="submit" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-truck"></i> Mark as On the Way
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('seller.update_order_status') }}" class="d-inline" onsubmit="return confirm('Are you sure you want to mark this order as Delivered?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="order_id" value="{{ order['id'] }}">
+                                            <input type="hidden" name="status" value="delivered">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Mark as Delivered
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    {% if order['status'] == 'on_the_way' %}
+                                        <form method="POST" action="{{ url_for('seller.update_order_status') }}" class="d-inline" onsubmit="return confirm('Are you sure you want to mark this order as Delivered?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="order_id" value="{{ order['id'] }}">
+                                            <input type="hidden" name="status" value="delivered">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Mark as Delivered
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Orders Yet</h4>
+                        <p class="text-muted mb-4">Orders for your products will appear here once customers start purchasing.</p>
+                        <a href="{{ url_for('seller.products') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Products
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+</div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cancel Order</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('seller.update_order_status') }}">
+        <div class="modal-body">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="order_id" id="cancel-order-id" value="">
+          <input type="hidden" name="status" value="cancelled">
+          <div class="mb-3">
+            <label class="form-label">Reason for cancellation</label>
+            <textarea class="form-control" name="reason" rows="3" required placeholder="Please provide the reason..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger">Confirm Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Order detail content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POD View Modal -->
+<div class="modal fade" id="podModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-clipboard-check"></i> Proof of Delivery</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="podContent">
+                <!-- POD content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+// Store modal instances to prevent duplicates
+let orderDetailModalInstance = null;
+let podModalInstance = null;
+
+// WebSocket connection for real-time notifications
+let socket = null;
+
+function viewOrderDetail(orderId) {
+    const container = document.getElementById('orderDetailContent');
+    const modal = document.getElementById('orderDetailModal');
+    
+    // Close any existing modals first
+    if (orderDetailModalInstance) {
+        orderDetailModalInstance.hide();
+    }
+    if (podModalInstance) {
+        podModalInstance.hide();
+    }
+    
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading order details...</p>
+        </div>
+    `;
+    
+    // Create and show modal
+    orderDetailModalInstance = new bootstrap.Modal(modal, { backdrop: 'static', keyboard: false });
+    orderDetailModalInstance.show();
+    
+    fetch(`/seller/orders/${orderId}/details`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                container.innerHTML = data.html;
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> ${data.error || 'Failed to load order details.'}
+                    </div>
+                `;
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching order details:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${error.message || 'Failed to load order details. Please try again.'}
+                </div>
+            `;
+        });
+}
+
+function viewPOD(orderId) {
+    const container = document.getElementById('podContent');
+    const modal = document.getElementById('podModal');
+    
+    // Close any existing modals first
+    if (orderDetailModalInstance) {
+        orderDetailModalInstance.hide();
+    }
+    if (podModalInstance) {
+        podModalInstance.hide();
+    }
+    
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading proof of delivery...</p>
+        </div>
+    `;
+    
+    // Create and show modal
+    podModalInstance = new bootstrap.Modal(modal, { backdrop: 'static', keyboard: false });
+    podModalInstance.show();
+    
+    fetch(`/seller/orders/${orderId}/pod`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                container.innerHTML = data.html;
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> ${data.error || 'Failed to load POD information.'}
+                    </div>
+                `;
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching POD:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${error.message || 'Failed to load POD information. Please try again.'}
+                </div>
+            `;
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup modal event listeners for cleanup
+    const orderDetailModal = document.getElementById('orderDetailModal');
+    const podModal = document.getElementById('podModal');
+
+    if (orderDetailModal) {
+        orderDetailModal.addEventListener('hidden.bs.modal', function() {
+            orderDetailModalInstance = null;
+            document.getElementById('orderDetailContent').innerHTML = '';
+        });
+    }
+
+    if (podModal) {
+        podModal.addEventListener('hidden.bs.modal', function() {
+            podModalInstance = null;
+            document.getElementById('podContent').innerHTML = '';
+        });
+    }
+
+    // Real-time orders refresh
+    function refreshOrdersList() {
+        // Get current URL to preserve filters
+        const url = new URL(window.location);
+        const currentPage = url.search;
+
+        fetch(`/seller/orders${currentPage}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            // Parse the new HTML
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, 'text/html');
+
+            // Find the orders container in both documents
+            const oldContainer = document.querySelector('.col-12');
+            const newContainer = newDoc.querySelector('.col-12');
+
+            if (oldContainer && newContainer) {
+                // Update only the orders section, not the entire page
+                oldContainer.innerHTML = newContainer.innerHTML;
+
+                // Re-attach event listeners to new elements
+                attachOrderEventListeners();
+            }
+        })
+        .catch(err => {
+            console.error('Error refreshing orders:', err);
+        });
+    }
+
+    // Re-attach event listeners to dynamically loaded elements
+    function attachOrderEventListeners() {
+        const statusSelects = document.querySelectorAll('select[name="status"]');
+        statusSelects.forEach(select => {
+            select.removeEventListener('change', handleStatusChange);
+            select.addEventListener('change', handleStatusChange);
+        });
+    }
+
+    // Status change handler
+    function handleStatusChange(e) {
+        e.preventDefault();
+        const status = this.value;
+        const orderId = this.form.querySelector('input[name="order_id"]').value;
+        let message = `Are you sure you want to change this order's status to "${status}"?`;
+        if (status === 'cancelled') {
+            message = 'Are you sure you want to cancel this order? This action cannot be undone.';
+        }
+        if (confirm(message)) {
+            this.form.submit();
+        } else {
+            this.selectedIndex = 0;
+        }
+    }
+
+    // Initial setup
+    attachOrderEventListeners();
+
+    // Poll for new orders every 10 seconds when on orders page
+    const ordersRefreshInterval = setInterval(function() {
+        // Only refresh if page is visible
+        if (document.visibilityState === 'visible') {
+            refreshOrdersList();
+        }
+    }, 10000);
+
+    // Clean up interval when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (ordersRefreshInterval) {
+            clearInterval(ordersRefreshInterval);
+        }
+        // Close WebSocket connection
+        if (socket) {
+            socket.disconnect();
+        }
+    });
+
+    const statusSelects = document.querySelectorAll('select[name="status"]');
+    statusSelects.forEach(select => {
+        select.addEventListener('change', function(e) {
+            e.preventDefault();
+            const status = this.value;
+            const orderId = this.form.querySelector('input[name="order_id"]').value;
+            let message = `Are you sure you want to change this order's status to "${status}"?`;
+            if (status === 'cancelled') {
+                message = 'Are you sure you want to cancel this order? This action cannot be undone.';
+            }
+            if (confirm(message)) {
+                this.form.submit();
+            } else {
+                this.selectedIndex = 0;
+            }
+        });
+    });
+
+    // Initialize WebSocket connection for real-time notifications
+    initializeWebSocket();
+});
+
+function initializeWebSocket() {
+    // Get seller ID from a hidden element or URL
+    const sellerId = document.body.dataset.sellerId || '{{ session.get("user_id") }}';
+
+    if (!sellerId) {
+        console.warn('Seller ID not found, skipping WebSocket connection');
+        return;
+    }
+
+    // Initialize Socket.IO connection
+    socket = io();
+
+    socket.on('connect', function() {
+        console.log('Connected to WebSocket server');
+
+        // Join seller's room for notifications
+        socket.emit('join_seller_room', { seller_id: sellerId });
+    });
+
+    socket.on('disconnect', function() {
+        console.log('Disconnected from WebSocket server');
+    });
+
+    // Listen for new order alerts
+    socket.on('new_order_alert', function(data) {
+        console.log('New order received:', data);
+
+        // Show notification
+        showNewOrderNotification(data);
+
+        // Refresh orders list immediately
+        refreshOrdersList();
+    });
+
+    // Listen for order status updates
+    socket.on('order_status_updated', function(data) {
+        console.log('Order status updated:', data);
+
+        // Refresh orders list to show updated status
+        refreshOrdersList();
+    });
+
+    socket.on('connect_error', function(error) {
+        console.error('WebSocket connection error:', error);
+    });
+}
+
+function showNewOrderNotification(data) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="fas fa-shopping-cart"></i>
+        <strong>New Order!</strong>
+        <br>
+        <small>Order #${data.order_id} - ₱${data.total_amount ? data.total_amount.toLocaleString() : 'N/A'}</small>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+
+    // Play notification sound (optional)
+    try {
+        const audio = new Audio('/static/audio/notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(e => console.log('Could not play notification sound:', e));
+    } catch (e) {
+        // Ignore audio errors
+    }
+}
+
+function handleSellerStatusChange(selectEl){
+  const form = selectEl.form;
+  const val = selectEl.value;
+  const opt = selectEl.options[selectEl.selectedIndex];
+  if (opt && opt.getAttribute('data-require-reason') === '1'){
+    const modalEl = document.getElementById('cancelOrderModal');
+    document.getElementById('cancel-order-id').value = form.querySelector('input[name="order_id"]').value;
+    const m = new bootstrap.Modal(modalEl);
+    m.show();
+    selectEl.selectedIndex = 0;
+    return;
+  }
+  if (!val){ return; }
+  if (confirm('Are you sure you want to change the status to ' + selectEl.options[selectEl.selectedIndex].text + '?')){
+    form.submit();
+  } else {
+    selectEl.selectedIndex = 0;
+  }
+}
+
+document.addEventListener('submit', function(e) {
+    const form = e.target.closest('.shipping-update-form');
+    if (!form) return;
+    e.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const feedback = form.querySelector('.shipping-update-feedback');
+    const originalHtml = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    const formData = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            feedback.innerHTML = `<div class="alert alert-success py-2 mb-0">${data.message}</div>`;
+        } else {
+            feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">${data.message || 'Failed to update shipping details.'}</div>`;
+        }
+    })
+    .catch((error) => {
+        console.error('Error updating shipping details:', error);
+        feedback.innerHTML = `<div class="alert alert-danger py-2 mb-0">${error.message || 'Failed to update shipping details.'}</div>`;
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,380 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Payout Request #{{ payout.id }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Payout Request #{{ payout.id }}</h1>
+            <p class="text-muted mb-0">Manage rider payout request</p>
+        </div>
+        <a href="{{ url_for('admin.payouts') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Payouts
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Request Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Request Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Request ID:</strong></p>
+                            <p class="text-muted">#{{ payout.id }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Status:</strong></p>
+                            <p>
+                                {% if payout.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending Review</span>
+                                {% elif payout.status == 'approved' %}
+                                    <span class="badge bg-info">Approved (Not Paid)</span>
+                                {% elif payout.status == 'paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif payout.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Amount Requested:</strong></p>
+                            <p class="h5 text-success">PHP {{ "%.2f"|format(payout.amount) }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Payout Method:</strong></p>
+                            <p>
+                                {% if payout.payout_method == 'bank_transfer' %}
+                                    <span class="badge bg-primary">Bank Transfer</span>
+                                {% elif payout.payout_method == 'gcash' %}
+                                    <span class="badge bg-success">GCash</span>
+                                {% elif payout.payout_method == 'cash_pickup' %}
+                                    <span class="badge bg-warning">Cash Pickup</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Requested Date:</strong></p>
+                            <p>{{ payout.requested_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Last Updated:</strong></p>
+                            <p>
+                                {% if payout.paid_at %}
+                                    {{ payout.paid_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% elif payout.approved_at %}
+                                    {{ payout.approved_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% else %}
+                                    Not yet updated
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if payout.notes %}
+                    <hr>
+                    <div class="mb-3">
+                        <p class="mb-0"><strong>Rider's Notes:</strong></p>
+                        <p class="text-muted">{{ payout.notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if payout.admin_notes %}
+                    <hr>
+                    <div class="mb-3">
+                        <p class="mb-0"><strong>Admin Notes:</strong></p>
+                        <p class="text-muted">{{ payout.admin_notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rider Information Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Rider Information</h6>
+                </div>
+                <div class="card-body">
+                    {% if rider %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Name:</strong></p>
+                            <p>{{ rider.first_name }} {{ rider.last_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Email:</strong></p>
+                            <p>{{ rider.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Phone:</strong></p>
+                            <p>{{ rider.phone or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Status:</strong></p>
+                            <p>
+                                {% if rider.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif rider.status == 'inactive' %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% elif rider.status == 'banned' %}
+                                    <span class="badge bg-danger">Banned</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Payout Method Details -->
+                    <hr>
+                    <h6 class="font-weight-bold mb-3">Payout Method Details:</h6>
+
+                    {% if payout.payout_method == 'bank_transfer' %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Bank Name:</strong></p>
+                            <p>{{ rider.bank_name or 'Not set' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Account Name:</strong></p>
+                            <p>{{ rider.account_name or 'Not set' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Account Number:</strong></p>
+                            <p><code>{{ rider.account_number or 'Not set' }}</code></p>
+                        </div>
+                    </div>
+
+                    {% elif payout.payout_method == 'gcash' %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>GCash Number:</strong></p>
+                            <p><code>{{ rider.gcash_number or 'Not set' }}</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>GCash Name:</strong></p>
+                            <p>{{ rider.gcash_name or 'Not set' }}</p>
+                        </div>
+                    </div>
+
+                    {% elif payout.payout_method == 'cash_pickup' %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Pickup Location:</strong></p>
+                            <p>{{ rider.pickup_location or 'Not set' }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('admin.user_detail', user_id=rider.id) }}" class="btn btn-sm btn-outline-primary mt-3">
+                        <i class="fas fa-user me-2"></i>View Rider Profile
+                    </a>
+                    {% else %}
+                    <div class="alert alert-danger">Rider information not found.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Earnings Summary Card -->
+            {% if earnings %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Rider's Earnings (Last 10)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Base Fee</th>
+                                    <th>Distance Fee</th>
+                                    <th>Tips</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for earning in earnings[:10] %}
+                                <tr>
+                                    <td>#{{ earning.order_id }}</td>
+                                    <td>PHP {{ "%.2f"|format(earning.base_fee) }}</td>
+                                    <td>PHP {{ "%.2f"|format(earning.distance_fee or 0) }}</td>
+                                    <td>PHP {{ "%.2f"|format(earning.tip_amount or 0) }}</td>
+                                    <td><strong>PHP {{ "%.2f"|format(earning.total_earning) }}</strong></td>
+                                    <td>
+                                        {% if earning.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif earning.status == 'paid' %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Actions -->
+        <div class="col-lg-4">
+            <!-- Action Panel -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions</h6>
+                </div>
+                <div class="card-body">
+                    {% if payout.status == 'pending' %}
+                    <!-- Approve Action -->
+                    <form method="POST" action="{{ url_for('admin.approve_payout', payout_id=payout.id) }}" class="mb-3">
+                        <div class="mb-3">
+                            <label for="approveNotes" class="form-label">Admin Notes (Optional)</label>
+                            <textarea name="admin_notes" id="approveNotes" class="form-control" rows="3" placeholder="Add notes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-check me-2"></i>Approve Request
+                        </button>
+                    </form>
+
+                    <!-- Reject Action -->
+                    <form method="POST" action="{{ url_for('admin.reject_payout', payout_id=payout.id) }}">
+                        <div class="mb-3">
+                            <label for="rejectNotes" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                            <textarea name="admin_notes" id="rejectNotes" class="form-control" rows="3" placeholder="Why are you rejecting?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you sure you want to reject this payout request?');">
+                            <i class="fas fa-times me-2"></i>Reject Request
+                        </button>
+                    </form>
+
+                    {% elif payout.status == 'approved' %}
+                    <!-- Mark as Paid Action -->
+                    <form method="POST" action="{{ url_for('admin.mark_payout_paid', payout_id=payout.id) }}">
+                        <div class="mb-3">
+                            <label for="transactionId" class="form-label">Transaction ID <span class="text-danger">*</span></label>
+                            <input type="text" name="transaction_id" id="transactionId" class="form-control" placeholder="e.g., TXN-12345" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paidNotes" class="form-label">Notes (Optional)</label>
+                            <textarea name="admin_notes" id="paidNotes" class="form-control" rows="3" placeholder="Payment confirmation notes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-money-bill me-2"></i>Mark as Paid
+                        </button>
+                    </form>
+
+                    {% elif payout.status == 'paid' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Payment Completed</strong><br>
+                        <small>Paid on: {{ payout.paid_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+
+                    {% elif payout.status == 'rejected' %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Request Rejected</strong><br>
+                        <small>{{ payout.admin_notes }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Status Timeline</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Requested -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <p class="mb-0"><strong>Requested</strong></p>
+                                <small class="text-muted">{{ payout.requested_at.strftime('%m/%d/%Y %I:%M %p') }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Approved -->
+                        {% if payout.approved_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <p class="mb-0"><strong>Approved</strong></p>
+                                <small class="text-muted">{{ payout.approved_at.strftime('%m/%d/%Y %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Paid -->
+                        {% if payout.paid_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <p class="mb-0"><strong>Paid</strong></p>
+                                <small class="text-muted">{{ payout.paid_at.strftime('%m/%d/%Y %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: -19px;
+    top: 25px;
+    bottom: -20px;
+    width: 2px;
+    background-color: #e3e6f0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -26px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+</style>
+{% endblock %}

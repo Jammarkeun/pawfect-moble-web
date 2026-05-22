@@ -1,0 +1,325 @@
+/* Enhanced notifications dropdown styles */
+.notif-menu {
+  --menu-radius: 12px;
+  --menu-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  --menu-bg: var(--card-bg, #ffffff);
+  --menu-border: var(--border-color, #e5e7eb);
+  --menu-hover: var(--bg-tertiary, #f9fafb);
+  --menu-accent: var(--brown-primary, #6D4C41);
+  --text-main: var(--text-primary, #333);
+  --text-muted: var(--text-secondary, #6b7280);
+  --unread-bg: #fff7ed;
+  --unread-border: #f59e0b;
+
+  border-radius: var(--menu-radius);
+  box-shadow: var(--menu-shadow);
+  border: 1px solid var(--menu-border);
+  overflow: hidden;
+  background: var(--menu-bg);
+  width: 400px;
+  animation: slideDownIn 0.3s ease-out;
+}
+
+@keyframes slideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark theme */
+[data-theme="dark"] .notif-menu {
+  --menu-bg: var(--card-bg, #2a2a2a);
+  --menu-border: #3a3a3a;
+  --menu-hover: #3a3a3a;
+  --text-main: #e5e7eb;
+  --text-muted: #a1a1aa;
+  --unread-bg: rgba(245, 158, 11, 0.15);
+}
+
+/* Header */
+.notif-menu .dropdown-header {
+  background: linear-gradient(to right, rgba(109, 76, 65, 0.08), transparent);
+  border-bottom: 1px solid var(--menu-border);
+  font-weight: 600;
+  color: var(--text-main);
+  padding: 14px 16px !important;
+}
+
+[data-theme="dark"] .notif-menu .dropdown-header {
+  background: linear-gradient(to right, rgba(109, 76, 65, 0.25), transparent);
+}
+
+.notif-menu .dropdown-header a {
+  color: var(--menu-accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: opacity 0.15s ease;
+}
+.notif-menu .dropdown-header a:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* List container */
+.notif-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+/* Individual notification item */
+.notif-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--menu-border);
+  position: relative;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item:hover {
+  background: var(--menu-hover);
+  transform: translateX(2px);
+}
+
+.notif-item.unread {
+  background: var(--unread-bg);
+  border-left: 3px solid var(--unread-border);
+  padding-left: 11px;
+}
+
+.notif-item.unread:hover {
+  background: var(--unread-bg);
+  filter: brightness(0.98);
+}
+
+/* Icon styling */
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.notif-icon.bg-primary { background: var(--menu-accent, #6D4C41); }
+.notif-icon.bg-success { background: #2e7d32; }
+.notif-icon.bg-info { background: #0288d1; }
+.notif-icon.bg-warning { background: #f57c00; }
+.notif-icon.bg-danger { background: #d32f2f; }
+.notif-icon.bg-secondary { background: #757575; }
+
+/* Content */
+.notif-body {
+  flex: 1;
+  min-width: 0;
+  padding-right: 24px;
+}
+
+.notif-title {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.notif-message {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-time {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notif-time i {
+  font-size: 0.75rem;
+}
+
+/* Mark as read button */
+.notif-mark {
+  opacity: 0;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+  font-size: 0.85rem;
+}
+
+.notif-item:hover .notif-mark {
+  opacity: 1;
+}
+
+.notif-mark:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--menu-accent);
+}
+
+/* Empty state */
+.notif-empty {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notif-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+
+.notif-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Loading state */
+.notif-loading {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notif-loading .spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--menu-border);
+  border-top-color: var(--menu-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar styling */
+.notif-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notif-list::-webkit-scrollbar-track {
+  background: var(--bg-tertiary, #f9fafb);
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+  background: var(--brown-light, #D7CCC8);
+  border-radius: 4px;
+}
+
+.notif-list::-webkit-scrollbar-thumb:hover {
+  background: var(--menu-accent);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .notif-menu {
+    width: calc(100vw - 32px) !important;
+    max-width: 400px;
+  }
+  
+  .notif-item {
+    padding: 10px 12px;
+  }
+  
+  .notif-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Notification badge pulse animation */
+#notification-count {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Smooth badge transition */
+#notification-count {
+  transition: all 0.3s ease;
+}
+
+/* Notification bell icon hover effect */
+#notifDropdown {
+  transition: all 0.2s ease;
+}
+
+#notifDropdown:hover i {
+  transform: scale(1.1);
+  animation: bellRing 0.5s ease-in-out;
+}
+
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(15deg); }
+  30% { transform: rotate(-15deg); }
+  45% { transform: rotate(15deg); }
+  60% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+  85% { transform: rotate(0deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

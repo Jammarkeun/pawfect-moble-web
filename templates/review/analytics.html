@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Review Analytics - Pawfect Finds{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Review Analytics</h1>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_reviews|default(0) }}</h3>
+                    <p class="text-muted mb-0">Total Reviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ approved_reviews|default(0) }}</h3>
+                    <p class="text-muted mb-0">Approved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ pending_reviews|default(0) }}</h3>
+                    <p class="text-muted mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">{{ avg_rating|default(0)|round(1) }}</h3>
+                    <p class="text-muted mb-0">Avg Rating</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+credentials.json
+
+# Flask
+instance/
+.webassets-cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Flask session
+flask_session/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+.pytest_cache/
+

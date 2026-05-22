@@ -1,0 +1,916 @@
+{% extends "base.html" %}
+
+{% block title %}Track Order #{{ order.id }} - Pawfect Finds{% endblock %}
+
+{% block content %}
+<style>
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #A1887F;
+    --beige: #F5E9DC;
+    --white: #FFFFFF;
+}
+
+body {
+    background-color: var(--beige);
+    color: var(--brown-dark);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background-color: var(--white);
+}
+
+.card-header {
+    background-color: var(--brown-primary);
+    color: var(--white);
+    border-radius: 10px 10px 0 0;
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding: 15px 0 15px 50px;
+    margin-bottom: 20px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 45px;
+    width: 2px;
+    height: calc(100% + 10px);
+    background-color: #dee2e6;
+}
+
+.timeline-item.completed:not(:last-child)::before {
+    background-color: #28a745;
+}
+
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 20px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #dee2e6;
+    border: 3px solid var(--white);
+    z-index: 2;
+}
+
+.timeline-item.completed::after {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.timeline-item.current::after {
+    background-color: var(--brown-primary);
+    border-color: var(--brown-primary);
+    box-shadow: 0 0 0 4px rgba(109, 76, 65, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.timeline-item.cancelled::after {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(109, 76, 65, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(109, 76, 65, 0.1);
+    }
+}
+
+.timeline-title {
+    font-weight: 600;
+    color: var(--brown-dark);
+    margin-bottom: 5px;
+}
+
+.timeline-item.completed .timeline-title {
+    color: #28a745;
+}
+
+.timeline-item.current .timeline-title {
+    color: var(--brown-primary);
+    font-weight: 700;
+}
+
+.timeline-item.cancelled .timeline-title {
+    color: #dc3545;
+}
+
+.timeline-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.7em;
+}
+
+/* Map Container Styles */
+.map-container-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.timeline-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.map-wrapper {
+    flex: 0 0 600px;
+    position: sticky;
+    top: 20px;
+}
+
+#riderLocationMap {
+    width: 100%;
+    height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border: 2px solid var(--brown-light);
+}
+
+.rider-info-card {
+    margin-top: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.rider-info-card .card-header {
+    background-color: var(--brown-primary);
+    color: var(--white);
+    padding: 16px 18px;
+    border: none;
+    font-size: 1.1rem;
+}
+
+.rider-info-card .card-body {
+    padding: 20px;
+}
+
+.rider-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.rider-info-item:last-child {
+    border-bottom: none;
+}
+
+.rider-info-label {
+    font-weight: 600;
+    color: var(--brown-dark);
+    font-size: 1rem;
+}
+
+.rider-info-value {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+@media (max-width: 992px) {
+    .map-container-wrapper {
+        flex-direction: column;
+    }
+    
+    .map-wrapper {
+        flex: 1;
+        width: 100%;
+        position: static;
+    }
+    
+    #riderLocationMap {
+        height: 400px;
+    }
+}
+</style>
+
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('public.browse_products') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('user.orders') }}">My Orders</a></li>
+            <li class="breadcrumb-item active">Track Order #{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Tracking Timeline with Map -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-route"></i> Order Status Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Container for Timeline and Map -->
+                    <div class="map-container-wrapper">
+                        <!-- Timeline on Left -->
+                        <div class="timeline-wrapper">
+                            <div class="timeline">
+                                {% for status_item in status_timeline %}
+                                <div class="timeline-item {{ 'completed' if status_item.get('completed') else '' }} {{ 'current' if status_item.get('current') else '' }} {{ 'cancelled' if status_item.get('cancelled') else '' }}">
+                                    <div class="timeline-title">
+                                        <i class="fas fa-{{ 
+                                            'check-circle' if status_item.get('completed') and not status_item.get('current') else
+                                            'clock' if status_item.get('current') else
+                                            'circle'
+                                        }}"></i>
+                                        {{ status_item.title }}
+                                    </div>
+                                    <div class="timeline-description">{{ status_item.description }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Rider Location Map on Right (if order is out for delivery) -->
+                        {% if order.status in ['shipped', 'on_the_way', 'picked_up'] and order.rider_id %}
+                        <div class="map-wrapper">
+                            <div class="card rider-info-card">
+                                <div class="card-header">
+                                    <i class="fas fa-map-location-dot me-2"></i>Rider Location
+                                </div>
+                                <div class="card-body" style="padding: 0;">
+                                    <div id="riderLocationMap"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Rider Info Card Below Map -->
+                            <div class="card rider-info-card">
+                                <div class="card-header">
+                                    <i class="fas fa-user me-2"></i>Delivery Agent
+                                </div>
+                                <div class="card-body">
+                                    <div class="rider-info-item">
+                                        <span class="rider-info-label">Name:</span>
+                                        <span class="rider-info-value" id="riderName">Loading...</span>
+                                    </div>
+                                    <div class="rider-info-item">
+                                        <span class="rider-info-label">Phone:</span>
+                                        <span class="rider-info-value" id="riderPhone">-</span>
+                                    </div>
+                                    <div class="rider-info-item">
+                                        <span class="rider-info-label">Status:</span>
+                                        <span id="riderStatus" class="badge bg-secondary">Loading...</span>
+                                    </div>
+                                    <div class="rider-info-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0;">
+                                        <span class="small text-muted" id="lastUpdate">Last updated: --:--</span>
+                                    </div>
+                                    <div class="rider-info-item" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+                                        <button 
+                                            id="contactRiderBtn" 
+                                            class="btn btn-primary btn-sm w-100"
+                                            data-order-id="{{ order.id }}"
+                                            type="button">
+                                            <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true" id="contactRiderSpinner"></span>
+                                            <i class="fas fa-comments"></i> Message Rider
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-0">
+                                <i class="fas fa-shipping-fast"></i> Track Order #{{ order.id }}
+                            </h4>
+                            <small class="text-light">Placed on {{ order.created_at|format_datetime('%B %d, %Y at %I:%M %p') if order.created_at else 'N/A' }}</small>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="d-flex flex-column align-items-md-end gap-2">
+                                <span class="badge bg-{{ 
+                                    'warning' if order.status == 'pending' else
+                                    'primary' if order.status == 'confirmed' else
+                                    'info' if order.status in ['preparing', 'shipped', 'on_the_way'] else
+                                    'success' if order.status == 'delivered' else
+                                    'danger' if order.status == 'cancelled' else
+                                    'secondary'
+                                }} fs-6">
+                                    {{ order.status.replace('_', ' ').title() }}
+                                </span>
+                                {% if current_user and current_user.role == 'user' and order.seller_id %}
+                                <button 
+                                    id="contactSellerBtn" 
+                                    class="btn btn-success btn-sm"
+                                    data-order-id="{{ order.id }}"
+                                    type="button"
+                                    style="background-color: #000000ff; color: white; border: none;">
+                                    <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true" id="contactSellerSpinner"></span>
+                                    <i class="fas fa-comments"></i> Contact Seller
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-map-marker-alt"></i> Shipping Address</h6>
+                            <p class="mb-3">{{ order.shipping_address }}</p>
+                            
+                            {% if order.tracking_number %}
+                            <h6><i class="fas fa-barcode"></i> Tracking Number</h6>
+                            <p class="mb-3"><strong>{{ order.tracking_number }}</strong></p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-receipt"></i> Order Summary</h6>
+                            <p class="mb-1"><strong>Total Amount:</strong> {{ order.total_amount|currency }}</p>
+                            <p class="mb-1"><strong>Payment Method:</strong> 
+                                {{ 'Cash on Delivery' if order.payment_method == 'cod' else 'Online Payment' }}
+                            </p>
+                            <p class="mb-0"><strong>Items:</strong> {{ order['items']|length if order.get('items') else 0 }} item(s)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('user.order_detail', order_id=order.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-eye"></i> View Order Details
+            </a>
+            <a href="{{ url_for('user.orders') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS and JS for map - LOAD BEFORE SCRIPTS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Leaflet Routing Machine for actual road routing -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.umd.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const contactBtn = document.getElementById('contactSellerBtn');
+    if (!contactBtn) return;
+
+    const spinner = document.getElementById('contactSellerSpinner');
+
+    contactBtn.addEventListener('click', async function(){
+        const orderId = this.dataset.orderId;
+        if (!orderId) return;
+
+        this.disabled = true;
+        if (spinner) spinner.classList.remove('d-none');
+
+        try {
+            const resp = await fetch(`/chat/api/order/${orderId}/chat`, { headers: { 'Accept': 'application/json' } });
+            if (!resp.ok) throw new Error('Failed to open chat');
+            const data = await resp.json();
+            if (!data.success || !data.room_id) {
+                throw new Error(data.error || 'Unable to start chat');
+            }
+            window.location.href = `/chat/room/${data.room_id}`;
+        } catch (err) {
+            console.error('Contact seller failed:', err);
+            if (typeof showToast === 'function') {
+                showToast('Chat', err.message || 'Unable to contact seller right now.', 'danger');
+            } else {
+                alert(err.message || 'Unable to contact seller right now.');
+            }
+        } finally {
+            this.disabled = false;
+            if (spinner) spinner.classList.add('d-none');
+        }
+    });
+
+    // Contact Rider Button Handler
+    const contactRiderBtn = document.getElementById('contactRiderBtn');
+    if (contactRiderBtn) {
+        const riderSpinner = document.getElementById('contactRiderSpinner');
+
+        contactRiderBtn.addEventListener('click', async function(){
+            const orderId = this.dataset.orderId;
+            if (!orderId) return;
+
+            this.disabled = true;
+            if (riderSpinner) riderSpinner.classList.remove('d-none');
+
+            try {
+                const resp = await fetch(`/chat/api/order/${orderId}/rider-chat`, { 
+                    headers: { 'Accept': 'application/json' } 
+                });
+                if (!resp.ok) throw new Error('Failed to open chat with rider');
+                const data = await resp.json();
+                if (!data.success || !data.room_id) {
+                    throw new Error(data.error || 'Unable to start chat with rider');
+                }
+                window.location.href = `/chat/room/${data.room_id}`;
+            } catch (err) {
+                console.error('Contact rider failed:', err);
+                if (typeof showToast === 'function') {
+                    showToast('Chat', err.message || 'Unable to contact rider right now.', 'danger');
+                } else {
+                    alert(err.message || 'Unable to contact rider right now.');
+                }
+            } finally {
+                this.disabled = false;
+                if (riderSpinner) riderSpinner.classList.add('d-none');
+            }
+        });
+    }
+});
+
+// Rider Location Tracking
+document.addEventListener('DOMContentLoaded', function() {
+    const orderId = {{ order.id }};
+    const mapContainer = document.getElementById('riderLocationMap');
+    
+    // Only initialize map if it exists on the page
+    if (!mapContainer) {
+        console.log('Map container not found - order not out for delivery or no rider assigned');
+        return;
+    }
+    
+    let map = null;
+    let riderMarker = null;
+    let destinationMarker = null;
+    let routeLine = null;
+    let routeControl = null;
+    let updateInterval = null;
+    let isInitialized = false;
+    let currentDeliveryStatus = null;
+    
+    /**
+     * Create custom HTML icon for delivery status
+     */
+    function createDeliveryIcon(status) {
+        let iconHTML, color;
+        
+        // Motorcycle icon for all delivery statuses
+        iconHTML = `
+            <div style="
+                background-color: #FF6B35;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                border: 2px solid white;
+                font-size: 20px;
+            ">🏍️</div>
+        `;
+        
+        return L.divIcon({
+            html: iconHTML,
+            className: 'delivery-status-icon',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
+        });
+    }
+    
+    /**
+     * Create destination (delivery address) icon
+     */
+    function createDestinationIcon() {
+        const iconHTML = `
+            <div style="
+                background-color: #2E7D32;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                border: 2px solid white;
+                font-size: 20px;
+            ">📦</div>
+        `;
+        
+        return L.divIcon({
+            html: iconHTML,
+            className: 'destination-icon',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
+        });
+    }
+    
+    /**
+     * Update route line between rider and destination using actual roads
+     */
+    function updateRouteLine() {
+        if (!map || !riderMarker || !destinationMarker) return;
+        
+        try {
+            const riderLatLng = riderMarker.getLatLng();
+            const destLatLng = destinationMarker.getLatLng();
+            
+            console.log('Updating route from', riderLatLng, 'to', destLatLng);
+            
+            // Remove old route if exists
+            if (routeControl) {
+                map.removeControl(routeControl);
+                routeControl = null;
+            }
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+            
+            // Use OSRM (free, no API key required)
+            const url = `https://router.project-osrm.org/route/v1/driving/` +
+                `${riderLatLng.lng},${riderLatLng.lat};${destLatLng.lng},${destLatLng.lat}` +
+                `?overview=full&geometries=geojson`;
+            
+            console.log('Requesting route from OSRM:', url);
+            
+            fetch(url, { 
+                method: 'GET',
+                timeout: 8000
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('OSRM Response:', data);
+                    
+                    if (data.routes && data.routes.length > 0) {
+                        const route = data.routes[0];
+                        const geometry = route.geometry;
+                        
+                        // Convert GeoJSON coordinates to LatLng format
+                        const points = geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        
+                        console.log('Route found with', points.length, 'points');
+                        console.log('First point:', points[0], 'Last point:', points[points.length - 1]);
+                        
+                        // Draw the route polyline following roads
+                        routeLine = L.polyline(points, {
+                            color: '#8B6F47',
+                            weight: 5,
+                            opacity: 0.8,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        }).addTo(map);
+                        
+                        console.log('✅ Road-based route polyline drawn successfully');
+                    } else {
+                        console.warn('No route found in OSRM response, using straight line');
+                        drawSimpleLine(riderLatLng, destLatLng);
+                    }
+                })
+                .catch(error => {
+                    console.error('Route fetch error:', error);
+                    console.log('Falling back to straight line');
+                    drawSimpleLine(riderLatLng, destLatLng);
+                });
+                
+        } catch (error) {
+            console.error('Error in updateRouteLine:', error);
+            drawSimpleLine(riderMarker.getLatLng(), destinationMarker.getLatLng());
+        }
+    }
+    
+    /**
+     * Fallback: Draw simple straight line if routing fails
+     */
+    function drawSimpleLine(latlng1, latlng2) {
+        try {
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+            
+            routeLine = L.polyline([latlng1, latlng2], {
+                color: '#4E342E',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '5, 5',
+                lineCap: 'round'
+            }).addTo(map);
+            
+            console.log('Fallback straight line drawn');
+        } catch (error) {
+            console.error('Error drawing fallback line:', error);
+        }
+    }
+    
+    /**
+     * Initialize the Leaflet map
+     */
+    function initializeMap(latitude, longitude) {
+        if (isInitialized || map) {
+            console.log('Map already initialized');
+            return;
+        }
+        
+        try {
+            console.log('Initializing map with coordinates:', latitude, longitude);
+            
+            // Clear any existing content
+            mapContainer.innerHTML = '';
+            
+            map = L.map(mapContainer, {
+                center: [latitude, longitude],
+                zoom: 15,
+                scrollWheelZoom: true
+            });
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Add rider marker (will be updated)
+            riderMarker = L.marker([latitude, longitude], {
+                icon: createDeliveryIcon('pending'),
+                title: 'Rider Location'
+            }).addTo(map).bindPopup('<strong>Rider Location</strong><br>Current Position');
+            
+            // Invalidate size after map is added to DOM
+            setTimeout(function() {
+                if (map) {
+                    map.invalidateSize();
+                    console.log('Map size invalidated');
+                }
+            }, 100);
+            
+            isInitialized = true;
+            console.log('Map initialization complete');
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            mapContainer.innerHTML = '<div class="alert alert-danger m-2">Failed to initialize map: ' + error.message + '</div>';
+        }
+    }
+    
+    /**
+     * Add destination marker
+     */
+    function addDestinationMarker(latitude, longitude, address) {
+        if (!map || !isInitialized) return;
+        
+        try {
+            if (destinationMarker) {
+                map.removeLayer(destinationMarker);
+            }
+            
+            destinationMarker = L.marker([latitude, longitude], {
+                icon: createDestinationIcon(),
+                title: 'Delivery Destination'
+            }).addTo(map).bindPopup('<strong>Delivery Destination</strong><br>' + address);
+            
+            // Draw route line to destination
+            updateRouteLine();
+            
+            console.log('Destination marker added');
+        } catch (error) {
+            console.error('Error adding destination marker:', error);
+        }
+    }
+    
+    /**
+     * Update rider location
+     */
+    function updateRiderLocation() {
+        fetch(`/user/api/order/${orderId}/rider-location`, {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.warn('Failed to get rider location:', data.message);
+                if (!isInitialized) {
+                    mapContainer.innerHTML = '<div class="alert alert-warning m-2">' + data.message + '</div>';
+                }
+                return;
+            }
+            
+            const { rider, location, delivery, order } = data;
+            const latitude = location.latitude;
+            const longitude = location.longitude;
+            
+            console.log('Rider location data received:', latitude, longitude);
+            
+            // Initialize map on first load
+            if (!isInitialized) {
+                initializeMap(latitude, longitude);
+                
+                // Geocode and add destination marker
+                geocodeAddress(order.shipping_address, function(destLat, destLng) {
+                    if (destLat && destLng) {
+                        console.log('Destination geocoded:', destLat, destLng);
+                        addDestinationMarker(destLat, destLng, order.shipping_address);
+                        
+                        // Fit bounds to show both markers
+                        if (riderMarker && destinationMarker && map) {
+                            const group = new L.featureGroup([riderMarker, destinationMarker]);
+                            map.fitBounds(group.getBounds(), { padding: [50, 50] });
+                            console.log('Map bounds fitted');
+                        }
+                    }
+                });
+            }
+            
+            // Update rider marker position
+            if (riderMarker && map && isInitialized) {
+                try {
+                    riderMarker.setLatLng([latitude, longitude]);
+                    // Update route line when rider moves
+                    updateRouteLine();
+                    console.log('Rider marker updated to:', latitude, longitude);
+                } catch (error) {
+                    console.error('Error updating rider marker:', error);
+                }
+            }
+            
+            // Update rider info
+            try {
+                const riderNameEl = document.getElementById('riderName');
+                const riderPhoneEl = document.getElementById('riderPhone');
+                const statusBadge = document.getElementById('riderStatus');
+                const lastUpdateEl = document.getElementById('lastUpdate');
+                
+                if (riderNameEl) riderNameEl.textContent = rider.name || 'Unknown';
+                if (riderPhoneEl) riderPhoneEl.textContent = rider.phone || 'N/A';
+                
+                if (statusBadge) {
+                    if (rider.is_online) {
+                        statusBadge.textContent = 'Online';
+                        statusBadge.className = 'badge bg-success';
+                    } else {
+                        statusBadge.textContent = 'Offline';
+                        statusBadge.className = 'badge bg-warning';
+                    }
+                }
+                
+                // Update last update time
+                if (lastUpdateEl) {
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    lastUpdateEl.textContent = 'Last updated: ' + timeStr;
+                }
+                
+                // Update rider icon based on delivery status
+                if (delivery && delivery.status && riderMarker && isInitialized) {
+                    const newStatus = delivery.status.toLowerCase();
+                    if (newStatus !== currentDeliveryStatus) {
+                        console.log('Delivery status changed from', currentDeliveryStatus, 'to', newStatus);
+                        currentDeliveryStatus = newStatus;
+                        
+                        // Update marker icon based on status
+                        const newIcon = createDeliveryIcon(newStatus);
+                        riderMarker.setIcon(newIcon);
+                        
+                        // Log status change
+                        let statusLabel = '';
+                        if (newStatus === 'picked_up') {
+                            statusLabel = '🏍️ Package Picked Up - Rider in Transit';
+                        } else if (newStatus === 'out_for_delivery') {
+                            statusLabel = '🏍️ Out for Delivery';
+                        } else if (newStatus === 'delivered') {
+                            statusLabel = '✅ Delivered';
+                        }
+                        
+                        if (statusLabel) {
+                            console.log('📍 ' + statusLabel);
+                        }
+                    }
+                }
+                
+                console.log('Rider info updated');
+            } catch (error) {
+                console.error('Error updating rider info elements:', error);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching rider location:', error);
+            if (!isInitialized) {
+                mapContainer.innerHTML = '<div class="alert alert-danger m-2">Error loading location: ' + error.message + '</div>';
+            }
+        });
+    }
+    
+    /**
+     * Geocode address using Nominatim (OpenStreetMap)
+     */
+    function geocodeAddress(address, callback) {
+        if (!address) {
+            console.warn('Empty address provided to geocoding');
+            callback(null, null);
+            return;
+        }
+        
+        // Fallback to Pililla, Rizal Philippines if specific address fails
+        // This is a reasonable default for the delivery area
+        const fallbackLat = 14.5995;
+        const fallbackLng = 120.9842;
+        
+        // Try to geocode with full address
+        const encodedAddress = encodeURIComponent(address + ', Philippines');
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}`;
+        
+        console.log('Geocoding address:', address);
+        
+        fetch(nominatimUrl, {
+            timeout: 5000
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const result = data[0];
+                    console.log('Geocoding result:', result);
+                    callback(parseFloat(result.lat), parseFloat(result.lon));
+                } else {
+                    console.warn('Geocoding returned no results for:', address);
+                    // Try simplified search - just municipality and province
+                    const simplifiedAddress = encodeURIComponent('Pililla, Rizal, Philippines');
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${simplifiedAddress}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const result = data[0];
+                                console.log('Using simplified geocoding result:', result);
+                                callback(parseFloat(result.lat), parseFloat(result.lon));
+                            } else {
+                                console.warn('Simplified geocoding also failed, using fallback location');
+                                callback(fallbackLat, fallbackLng);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Simplified geocoding error:', error);
+                            console.log('Using fallback location:', fallbackLat, fallbackLng);
+                            callback(fallbackLat, fallbackLng);
+                        });
+                }
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+                console.log('Using fallback location:', fallbackLat, fallbackLng);
+                callback(fallbackLat, fallbackLng);
+            });
+    }
+    
+    // Initial location update
+    console.log('Starting initial location update for order:', orderId);
+    updateRiderLocation();
+    
+    // Update every 10 seconds
+    updateInterval = setInterval(updateRiderLocation, 10000);
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            console.log('Location update interval cleared');
+        }
+    });
+});</script>
+{% endblock %}

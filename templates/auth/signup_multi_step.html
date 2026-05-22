@@ -1,0 +1,1147 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Pawfect Finds{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brown-dark: #4E342E;
+        --brown-primary: #6D4C41;
+        --brown-light: #D7CCC8;
+        --tan: #EBD5B3;
+        --white: #FFFFFF;
+        --beige-bg: #FAF3E0;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--beige-bg);
+        color: var(--brown-dark);
+        overflow-x: hidden;
+    }
+
+    .signup-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+    }
+
+    .signup-card {
+        display: flex;
+        flex-direction: row;
+        width: 1000px;
+        max-width: 95%;
+        background: var(--white);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .signup-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    /* LEFT SIDE */
+    .signup-logo-section {
+        flex: 1;
+        background: linear-gradient(135deg, var(--tan), var(--brown-light));
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        padding: 40px;
+    }
+
+    .signup-logo-section img {
+        max-width: 250px;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+    }
+
+    .signup-logo-section h3 {
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: var(--brown-dark);
+    }
+
+    .signup-logo-section p {
+        font-size: 0.9rem;
+        color: #5c4033;
+    }
+
+    /* RIGHT SIDE */
+    .signup-form-section {
+        flex: 1.5;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .account-type-toggle {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .account-type-label {
+        font-weight: 600;
+        color: var(--brown-dark);
+        min-width: 110px;
+    }
+
+    .account-type-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        width: 100%;
+    }
+
+    .account-type-btn {
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background: #f8f1ec;
+        color: var(--brown-dark);
+        font-weight: 600;
+        padding: 12px 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(109, 76, 65, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .account-type-btn i {
+        font-size: 0.95rem;
+    }
+
+    .account-type-btn:hover {
+        transform: translateY(-1px);
+        border-color: var(--brown-light);
+    }
+
+    .account-type-btn.active {
+        background: var(--brown-primary);
+        color: white;
+        border-color: var(--brown-dark);
+        box-shadow: 0 10px 25px rgba(78, 52, 46, 0.25);
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        background-color: var(--brown-primary);
+        color: white;
+    }
+
+    .step.completed {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .step-line {
+        width: 40px;
+        height: 2px;
+        background-color: #e9ecef;
+        margin-top: 19px;
+    }
+
+    .step-line.completed {
+        background-color: #28a745;
+    }
+
+    .form-step {
+        display: none;
+    }
+
+    .form-step.active {
+        display: block;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--brown-dark);
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--brown-primary);
+        box-shadow: 0 0 0 0.2rem rgba(109, 76, 65, 0.25);
+    }
+
+    .btn-primary {
+        background-color: var(--brown-primary);
+        border-color: var(--brown-primary);
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--brown-dark);
+        border-color: var(--brown-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: var(--brown-primary);
+    }
+
+    .text-primary {
+        color: var(--brown-primary) !important;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .text-primary:hover {
+        color: var(--brown-dark) !important;
+        text-decoration: underline;
+    }
+
+    .otp-input {
+        text-align: center;
+        font-size: 1.5rem;
+        letter-spacing: 0.5rem;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .signup-card {
+            flex-direction: column;
+            border-radius: 15px;
+        }
+
+        .signup-logo-section {
+            padding: 30px;
+        }
+
+        .signup-logo-section img {
+            max-width: 180px;
+        }
+
+        .signup-form-section {
+            padding: 30px 25px;
+        }
+    }
+</style>
+
+<div class="signup-container">
+    <div class="signup-card shadow">
+        <div class="signup-logo-section">
+            <img src="{{ url_for('static', filename='PF-logo.png') }}" alt="Pawfect Finds Logo">
+            <h3>Pawfect Finds</h3>
+            <p>Because every pet deserves the best care.</p>
+        </div>
+
+        <div class="signup-form-section">
+            <h4><i class="fas fa-user-plus"></i> Create Your Account</h4>
+            <p>Join the Pawfect Finds family today and enjoy a seamless shopping experience for your pets.</p>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1-indicator">1</div>
+                <div class="step-line" id="line1"></div>
+                <div class="step" id="step2-indicator">2</div>
+                <div class="step-line" id="line2"></div>
+                <div class="step" id="step3-indicator">3</div>
+            </div>
+
+            <form method="POST" id="signupForm" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <!-- Display form errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Form Errors:</strong>
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items() %}
+                            {% for error in errors %}
+                                <li>{{ field|replace('_', ' ')|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+
+                <!-- Account type selection -->
+                <div class="account-type-toggle">
+                    <span class="account-type-label">Sign up as:</span>
+                    <div class="account-type-buttons" role="group" aria-label="Account type selection">
+                        <button type="button" class="account-type-btn" data-value="user" aria-pressed="false">
+                            <i class="fas fa-user"></i>
+                            <span>User</span>
+                        </button>
+                        <button type="button" class="account-type-btn" data-value="seller" aria-pressed="false">
+                            <i class="fas fa-store"></i>
+                            <span>Seller</span>
+                        </button>
+                        <button type="button" class="account-type-btn" data-value="rider" aria-pressed="false">
+                            <i class="fas fa-motorcycle"></i>
+                            <span>Rider</span>
+                        </button>
+                    </div>
+                    {{ form.account_type(class="d-none", id="account_type_field") }}
+                </div>
+
+                <!-- Step 1: Personal Information -->
+                <div class="form-step active" id="step1">
+                    <h5 class="mb-4">Personal Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-user"></i> First Name</label>
+                            {{ form.first_name(class="form-control", placeholder="Enter your first name", id="first_name") }}
+                            {% for error in form.first_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-user"></i> Last Name</label>
+                            {{ form.last_name(class="form-control", placeholder="Enter your last name", id="last_name") }}
+                            {% for error in form.last_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                        {{ form.email(class="form-control", placeholder="Enter your email", id="email") }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+                            <div class="password-container">
+                                {{ form.password(class="form-control", placeholder="Create a password", id="password") }}
+                                <i class="fas fa-eye password-toggle" id="toggle-password"></i>
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
+                            <div class="password-container">
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm your password", id="confirm_password") }}
+                                <i class="fas fa-eye password-toggle" id="toggle-confirm-password"></i>
+                            </div>
+                            {% for error in form.confirm_password.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary" id="nextStep1">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Contact & Location -->
+                <div class="form-step" id="step2">
+                    <h5 class="mb-4">Contact & Location</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-phone"></i> Phone Number</label>
+                        {{ form.phone(class="form-control", placeholder="Enter your phone number", id="phone") }}
+                        {% for error in form.phone.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-globe"></i> Country</label>
+                            {{ form.country(class="form-control", id="country") }}
+                            {% for error in form.country.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label mb-0"><i class="fas fa-map-marker-alt"></i> Region</label>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadRegions()" title="Reload Regions">
+                                        <i class="fas fa-sync"></i> Reload
+                                    </button>
+                                </div>
+                                <select class="form-select" id="region_select" disabled>
+                                    <option value="">Loading regions...</option>
+                                </select>
+                                <div id="region_error" class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-map"></i> Province</label>
+                            <select class="form-control" id="province_select" required disabled>
+                                <option value="">Select Province</option>
+                            </select>
+                            {{ form.province(class="form-control d-none", id="province") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-city"></i> City/Municipality</label>
+                            <select class="form-control" id="city_select" required disabled>
+                                <option value="">Select City/Municipality</option>
+                            </select>
+                            {{ form.city(class="form-control d-none", id="city") }}
+                            {% for error in form.city.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label"><i class="fas fa-map"></i> Barangay</label>
+                            <select class="form-control" id="barangay_select" required disabled>
+                                <option value="">Select Barangay</option>
+                            </select>
+                            {{ form.barangay(class="form-control d-none", id="barangay") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-road"></i> Street</label>
+                            {{ form.street(class="form-control", placeholder="Street name", id="street") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-home"></i> House/Unit No.</label>
+                            {{ form.house_number(class="form-control", placeholder="# / Unit", id="house_number") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-map-marker-alt"></i> Complete Address (auto-filled, editable)</label>
+                        {{ form.address(class="form-control", rows="3", placeholder="Enter your complete address", id="address") }}
+                        {% for error in form.address.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" id="prevStep2"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button type="button" class="btn btn-primary" id="nextStep2">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 3: ID Verification -->
+                <div class="form-step" id="step3">
+                    <h5 class="mb-4">ID Verification & Account Details</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-id-card"></i> ID Picture</label>
+                        {{ form.id_picture(class="form-control", accept="image/*,.pdf", id="id_picture") }}
+                        <small class="form-text text-muted">Upload a clear photo of your government-issued ID (JPG, PNG, or PDF)</small>
+                        {% for error in form.id_picture.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Seller-specific fields -->
+                    <div id="seller_fields" class="mt-4" style="display:none;">
+                        <h5 class="mb-3"><i class="fas fa-store me-2"></i>Seller Information</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Business Name *</label>
+                            {{ form.business_name(class="form-control", placeholder="Enter your business/store name", data_seller_required="true") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Business Description *</label>
+                            {{ form.business_description(class="form-control", rows=3, placeholder="Describe your business and the products you plan to sell...", data_seller_required="true") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Business Address *</label>
+                            {{ form.business_address(class="form-control", rows=2, placeholder="Enter your complete business address", data_seller_required="true") }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Business Phone *</label>
+                                {{ form.business_phone(class="form-control", placeholder="Business contact number", data_seller_required="true") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tax ID (Optional)</label>
+                                {{ form.tax_id(class="form-control", placeholder="Business tax identification number") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Business Permit *</label>
+                            {{ form.business_permit(class="form-control", data_seller_required="true") }}
+                            <small class="form-text text-muted">Upload your business permit (JPG, PNG, or PDF)</small>
+                        </div>
+                    </div>
+
+                    <!-- Rider-specific fields -->
+                    <div id="rider_fields" class="mt-4" style="display:none;">
+                        <h5 class="mb-3"><i class="fas fa-motorcycle me-2"></i>Rider Information</h5>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Vehicle Type *</label>
+                                {{ form.vehicle_type(class="form-select", data_rider_required="true") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Vehicle Plate Number *</label>
+                                {{ form.vehicle_plate_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Vehicle Model *</label>
+                                {{ form.vehicle_model(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Government ID *</label>
+                            {{ form.rider_government_id(class="form-control", data_rider_required="true") }}
+                            <small class="form-text text-muted">Driver's License or National ID (JPG, PNG, or PDF)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Profile Photo *</label>
+                            {{ form.rider_profile_photo(class="form-control", data_rider_required="true") }}
+                            <small class="form-text text-muted">Recent photo for identification purposes</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Vehicle Registration (OR/CR)</label>
+                            {{ form.rider_vehicle_registration(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">NBI/Police Clearance</label>
+                            {{ form.rider_clearance(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-secondary" id="prevStep3"><i class="fas fa-arrow-left"></i> Previous</button>
+                        {{ form.submit(class="btn btn-primary", id="submitBtn") }}
+                    </div>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <p class="mb-0">Already have an account?
+                    <a href="{{ url_for('auth.login', force='1') }}" class="text-primary">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initAccountTypeToggle() {
+    const buttons = document.querySelectorAll('.account-type-btn');
+    const sellerSection = document.getElementById('seller_fields');
+    const riderSection = document.getElementById('rider_fields');
+    const radioInputs = document.querySelectorAll('input[name="account_type"]');
+
+    if (!buttons.length || !radioInputs.length) return;
+
+    const getCurrentValue = () => {
+        const checked = Array.from(radioInputs).find(input => input.checked);
+        return checked ? checked.value : 'user';
+    };
+
+    const setRadioValue = (value) => {
+        let matched = false;
+        radioInputs.forEach(input => {
+            const shouldCheck = input.value === value;
+            input.checked = shouldCheck;
+            if (shouldCheck) {
+                matched = true;
+            }
+        });
+        if (!matched && radioInputs[0]) {
+            radioInputs[0].checked = true;
+        }
+    };
+
+    function toggleSections(value) {
+        if (sellerSection) sellerSection.style.display = value === 'seller' ? 'block' : 'none';
+        if (riderSection) riderSection.style.display = value === 'rider' ? 'block' : 'none';
+
+        document.querySelectorAll('[data-seller-required="true"]').forEach(el => {
+            el.required = value === 'seller';
+        });
+        document.querySelectorAll('[data-rider-required="true"]').forEach(el => {
+            el.required = value === 'rider';
+        });
+    }
+
+    function setActive(value) {
+        setRadioValue(value);
+        buttons.forEach(btn => {
+            const isActive = btn.dataset.value === value;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        toggleSections(value);
+    }
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => setActive(btn.dataset.value));
+    });
+
+    setActive(getCurrentValue());
+}
+
+initAccountTypeToggle();
+
+// Multi-step form functionality
+let currentStep = 1;
+const totalSteps = 3;
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    
+    // Show current step
+    document.getElementById(`step${step}`).classList.add('active');
+    
+    // Update step indicators
+    for (let i = 1; i <= totalSteps; i++) {
+        const indicator = document.getElementById(`step${i}-indicator`);
+        const line = document.getElementById(`line${i-1}`);
+        
+        if (i < step) {
+            indicator.classList.add('completed');
+            indicator.classList.remove('active');
+            if (line) line.classList.add('completed');
+        } else if (i === step) {
+            indicator.classList.add('active');
+            indicator.classList.remove('completed');
+        } else {
+            indicator.classList.remove('active', 'completed');
+            if (line) line.classList.remove('completed');
+        }
+    }
+}
+
+const LOCATION_API_BASE = '/api/ph';
+
+// Initialize location selects FIRST
+const countrySelectEl = document.getElementById('country');
+const addressSelects = {
+    region: document.getElementById('region_select'),
+    province: document.getElementById('province_select'),
+    city: document.getElementById('city_select'),
+    barangay: document.getElementById('barangay_select')
+};
+
+const hiddenLocationFields = {
+    province: document.getElementById('province'),
+    city: document.getElementById('city'),
+    barangay: document.getElementById('barangay')
+};
+
+initializeAddressModule();
+
+function initAddressFields() {
+    ['province', 'city', 'barangay'].forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.classList.add('d-none');
+        }
+    });
+}
+
+function initializeAddressModule() {
+    if (!countrySelectEl) return;
+    if (countrySelectEl.value === 'Philippines') {
+        loadRegions();
+    } else {
+        clearAddressFields();
+    }
+
+    countrySelectEl.addEventListener('change', (event) => {
+        if (event.target.value === 'Philippines') {
+            loadRegions();
+        } else {
+            clearAddressFields();
+        }
+        updateAddress();
+    });
+}
+
+function bindAddressSelectListeners() {
+    if (addressSelects.region) {
+        addressSelects.region.addEventListener('change', (event) => {
+            if (event.target.value) {
+                loadProvinces(event.target.value);
+            } else {
+                clearDependentFields('province');
+            }
+            updateAddress();
+        });
+    }
+
+    if (addressSelects.province) {
+        addressSelects.province.addEventListener('change', (event) => {
+            setHiddenFromSelect(addressSelects.province, 'province');
+            if (event.target.value) {
+                loadCities(event.target.value);
+            } else {
+                clearDependentFields('city');
+            }
+            updateAddress();
+        });
+    }
+
+    if (addressSelects.city) {
+        addressSelects.city.addEventListener('change', (event) => {
+            setHiddenFromSelect(addressSelects.city, 'city');
+            if (event.target.value) {
+                loadBarangays(event.target.value);
+            } else {
+                clearDependentFields('barangay');
+            }
+            updateAddress();
+        });
+    }
+
+    if (addressSelects.barangay) {
+        addressSelects.barangay.addEventListener('change', () => {
+            setHiddenFromSelect(addressSelects.barangay, 'barangay');
+            updateAddress();
+        });
+    }
+
+    ['house_number', 'street'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', updateAddress);
+        }
+    });
+}
+
+function clearAddressFields() {
+    resetSelect(addressSelects.region, 'Select Region', true);
+    clearDependentFields('province');
+    const regionError = document.getElementById('region_error');
+    if (regionError) {
+        regionError.textContent = '';
+        regionError.classList.remove('d-block');
+    }
+}
+
+function clearDependentFields(level) {
+    if (level === 'province' || level === 'all') {
+        resetSelect(addressSelects.province, 'Select Province', true);
+        setHiddenValue('province', '');
+    }
+    if (level === 'province' || level === 'city' || level === 'all') {
+        resetSelect(addressSelects.city, 'Select City/Municipality', true);
+        setHiddenValue('city', '');
+    }
+    if (level === 'province' || level === 'city' || level === 'barangay' || level === 'all') {
+        resetSelect(addressSelects.barangay, 'Select Barangay', true);
+        setHiddenValue('barangay', '');
+    }
+}
+
+function resetSelect(selectEl, placeholder, disable = false) {
+    if (!selectEl) return;
+    selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+    selectEl.disabled = disable;
+}
+
+async function fetchLocationData(endpoint) {
+    const response = await fetch(`${LOCATION_API_BASE}/${endpoint}`);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    if (!payload.success) {
+        throw new Error(payload.message || 'Failed to load data');
+    }
+    return payload.data || [];
+}
+
+async function loadRegions() {
+    if (!addressSelects.region) return;
+    const regionError = document.getElementById('region_error');
+    if (regionError) {
+        regionError.textContent = '';
+        regionError.classList.remove('d-block');
+    }
+
+    resetSelect(addressSelects.region, 'Loading regions...', true);
+
+    try {
+        const regions = await fetchLocationData('regions');
+        populateSelect(addressSelects.region, regions, 'Select Region');
+        addressSelects.region.disabled = false;
+        clearDependentFields('province');
+    } catch (error) {
+        console.error('Error loading regions:', error);
+        addressSelects.region.disabled = false;
+        addressSelects.region.innerHTML = '<option value="">Unable to load regions</option>';
+        if (regionError) {
+            regionError.textContent = 'Unable to load regions. Please try again.';
+            regionError.classList.add('d-block');
+        }
+    }
+}
+
+async function loadProvinces(regionCode) {
+    if (!addressSelects.province) return;
+    resetSelect(addressSelects.province, 'Loading provinces...', true);
+    clearDependentFields('city');
+
+    try {
+        const provinces = await fetchLocationData(`provinces/${encodeURIComponent(regionCode)}`);
+        populateSelect(addressSelects.province, provinces, 'Select Province');
+        addressSelects.province.disabled = false;
+    } catch (error) {
+        console.error('Error loading provinces:', error);
+        addressSelects.province.innerHTML = '<option value="">Unable to load provinces</option>';
+    }
+}
+
+async function loadCities(provinceCode) {
+    if (!addressSelects.city) return;
+    resetSelect(addressSelects.city, 'Loading cities...', true);
+    clearDependentFields('barangay');
+
+    try {
+        const cities = await fetchLocationData(`cities/${encodeURIComponent(provinceCode)}`);
+        populateSelect(addressSelects.city, cities, 'Select City/Municipality');
+        addressSelects.city.disabled = false;
+    } catch (error) {
+        console.error('Error loading cities:', error);
+        addressSelects.city.innerHTML = '<option value="">Unable to load cities</option>';
+    }
+}
+
+async function loadBarangays(cityCode) {
+    if (!addressSelects.barangay) return;
+    resetSelect(addressSelects.barangay, 'Loading barangays...', true);
+
+    try {
+        const barangays = await fetchLocationData(`barangays/${encodeURIComponent(cityCode)}`);
+        populateSelect(addressSelects.barangay, barangays, 'Select Barangay');
+        addressSelects.barangay.disabled = false;
+    } catch (error) {
+        console.error('Error loading barangays:', error);
+        addressSelects.barangay.innerHTML = '<option value="">Unable to load barangays</option>';
+    }
+}
+
+function populateSelect(selectEl, items, placeholder) {
+    if (!selectEl) return;
+    selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+    items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.code || item.name || '';
+        option.textContent = item.name || 'Unnamed';
+        option.dataset.name = item.name || '';
+        selectEl.appendChild(option);
+    });
+}
+
+function setHiddenFromSelect(selectEl, fieldId) {
+    const value = getSelectedText(selectEl);
+    setHiddenValue(fieldId, value);
+}
+
+function setHiddenValue(fieldId, value) {
+    const field = hiddenLocationFields[fieldId];
+    if (field) {
+        field.value = value || '';
+    }
+}
+
+function getSelectedText(selectEl) {
+    if (!selectEl || selectEl.selectedIndex < 0) return '';
+    const option = selectEl.options[selectEl.selectedIndex];
+    return option?.dataset?.name || option?.textContent || option?.value || '';
+}
+
+function updateAddress() {
+    const parts = [];
+    const houseNumber = document.getElementById('house_number')?.value?.trim();
+    const street = document.getElementById('street')?.value?.trim();
+    const barangay = getSelectedText(addressSelects.barangay);
+    const city = getSelectedText(addressSelects.city);
+    const province = getSelectedText(addressSelects.province);
+    const region = getSelectedText(addressSelects.region);
+    const country = countrySelectEl?.value || '';
+
+    if (houseNumber) parts.push(houseNumber);
+    if (street) parts.push(street);
+    if (barangay) parts.push(barangay);
+    if (city) parts.push(city);
+    if (province) parts.push(province);
+    if (region) parts.push(region);
+    if (country) parts.push(country);
+
+    const addressField = document.getElementById('address');
+    if (addressField) {
+        addressField.value = parts.join(', ');
+    }
+}
+
+function syncHiddenLocationFields() {
+    setHiddenFromSelect(addressSelects.province, 'province');
+    setHiddenFromSelect(addressSelects.city, 'city');
+    setHiddenFromSelect(addressSelects.barangay, 'barangay');
+}
+
+// Bind address select listeners after initialization
+bindAddressSelectListeners();
+
+// Password toggle functionality
+const togglePasswordBtn = document.getElementById('toggle-password');
+if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', function() {
+        const passwordField = document.getElementById('password');
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            this.classList.remove('fa-eye');
+            this.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            this.classList.remove('fa-eye-slash');
+            this.classList.add('fa-eye');
+        }
+    });
+}
+
+const toggleConfirmPasswordBtn = document.getElementById('toggle-confirm-password');
+if (toggleConfirmPasswordBtn) {
+    toggleConfirmPasswordBtn.addEventListener('click', function() {
+        const passwordField = document.getElementById('confirm_password');
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            this.classList.remove('fa-eye');
+            this.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            this.classList.remove('fa-eye-slash');
+            this.classList.add('fa-eye');
+        }
+    });
+}
+
+// Form navigation - nextStep1
+const nextStep1Btn = document.getElementById('nextStep1');
+if (nextStep1Btn) {
+    nextStep1Btn.addEventListener('click', function() {
+        const firstNameInput = document.getElementById('first_name');
+        const lastNameInput = document.getElementById('last_name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+
+        if (!firstNameInput?.value.trim()) {
+            alert('Please enter your first name');
+            return;
+        }
+        if (!lastNameInput?.value.trim()) {
+            alert('Please enter your last name');
+            return;
+        }
+        if (!emailInput?.value.trim()) {
+            alert('Please enter your email');
+            return;
+        }
+        if (!passwordInput?.value) {
+            alert('Please enter a password');
+            return;
+        }
+        if (passwordInput.value !== confirmPasswordInput?.value) {
+            alert('Passwords do not match');
+            return;
+        }
+
+        currentStep = 2;
+        showStep(currentStep);
+    });
+}
+
+// Form navigation - prevStep2
+const prevStep2Btn = document.getElementById('prevStep2');
+if (prevStep2Btn) {
+    prevStep2Btn.addEventListener('click', function() {
+        currentStep = 1;
+        showStep(currentStep);
+    });
+}
+
+// Form navigation - nextStep2
+const nextStep2Btn = document.getElementById('nextStep2');
+if (nextStep2Btn) {
+    nextStep2Btn.addEventListener('click', function() {
+        const phoneInput = document.getElementById('phone');
+        const countryInput = document.getElementById('country');
+        const regionSelect = document.getElementById('region_select');
+        const provinceSelect = document.getElementById('province_select');
+        const citySelect = document.getElementById('city_select');
+        const barangaySelect = document.getElementById('barangay_select');
+
+        if (!phoneInput?.value.trim()) {
+            alert('Please enter your phone number');
+            return;
+        }
+        if (!countryInput?.value) {
+            alert('Please select your country');
+            return;
+        }
+        if (countryInput.value === 'Philippines') {
+            if (!regionSelect?.value) {
+                alert('Please select a region');
+                return;
+            }
+            if (!provinceSelect?.value) {
+                alert('Please select a province');
+                return;
+            }
+            if (!citySelect?.value) {
+                alert('Please select a city');
+                return;
+            }
+            if (!barangaySelect?.value) {
+                alert('Please select a barangay');
+                return;
+            }
+        }
+
+        syncHiddenLocationFields();
+        currentStep = 3;
+        showStep(currentStep);
+    });
+}
+
+// Form navigation - prevStep3
+const prevStep3Btn = document.getElementById('prevStep3');
+if (prevStep3Btn) {
+    prevStep3Btn.addEventListener('click', function() {
+        currentStep = 2;
+        showStep(currentStep);
+    });
+}
+
+// Form submission
+const signupForm = document.getElementById('signupForm');
+if (signupForm) {
+    signupForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const accountTypeButtons = document.querySelectorAll('.account-type-btn');
+        let selectedType = 'user';
+        accountTypeButtons.forEach(btn => {
+            if (btn.classList.contains('active')) {
+                selectedType = btn.dataset.value;
+            }
+        });
+        
+        const accountTypeField = document.getElementById('account_type_field');
+        if (accountTypeField) {
+            accountTypeField.value = selectedType;
+        }
+
+        const sellerFields = document.querySelectorAll('[data-seller-required="true"]');
+        const riderFields = document.querySelectorAll('[data-rider-required="true"]');
+
+        if (selectedType === 'seller') {
+            for (let field of sellerFields) {
+                if (!field.value?.trim()) {
+                    alert('Please fill in all required seller fields');
+                    return;
+                }
+            }
+        }
+
+        if (selectedType === 'rider') {
+            for (let field of riderFields) {
+                if (!field.value) {
+                    alert('Please fill in all required rider fields');
+                    return;
+                }
+            }
+        }
+
+        // Use HTMLFormElement.prototype.submit to avoid shadowing by submit button name
+        HTMLFormElement.prototype.submit.call(signupForm);
+    });
+}
+</script>
+
+{% if config.GOOGLE_MAPS_API_KEY %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initAddressAutocomplete" async defer></script>
+{% endif %}
+{% endblock %}

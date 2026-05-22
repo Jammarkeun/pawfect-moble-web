@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Support Chat - {{ chat_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .chat-wrapper { max-width: 900px; }
+  .chat-messages { height: 60vh; overflow-y: auto; background: #fafafa; padding: 16px; }
+  .msg { display: flex; margin-bottom: 16px; gap: 10px; }
+  .msg-avatar { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    background: linear-gradient(135deg, #d7ccc8, #a1887f);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .msg.user .msg-avatar { background: linear-gradient(135deg, #4caf50, #388e3c); }
+  .msg.support .msg-avatar { background: linear-gradient(135deg, #2196f3, #1976d2); }
+  .msg-content { max-width: 70%; }
+  .msg .bubble { padding: 10px 12px; border-radius: 14px; }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .msg-content { text-align: right; }
+  .msg.user .bubble { background: #d1e7dd; border: 1px solid #badbcc; }
+  .msg.support .bubble { background: #fff; border: 1px solid #e5e7eb; }
+  .msg-header { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+  .msg.user .msg-header { color: #1b5e20; }
+  .msg.support .msg-header { color: #0d47a1; }
+  .msg .meta { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+  .chat-input { position: sticky; bottom: 0; background: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="chat-wrapper mx-auto">
+    <div class="d-flex align-items-center mb-4 chat-header">
+      <a class="btn btn-link me-2" href="{{ url_for('chat.support_chat') }}"><i class="fas fa-arrow-left"></i></a>
+      <h3 class="mb-0"><i class="fas fa-comments me-2"></i>{{ chat_title }}</h3>
+    </div>
+
+    <div id="messages" class="chat-messages mb-3"></div>
+
+    <div class="chat-input pt-2">
+      <form id="send-form" class="d-flex gap-2">
+        <input id="message-input" class="form-control" placeholder="Type a message..." autocomplete="off" />
+        <button class="btn btn-primary" type="submit" title="Send"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function(){
+    const roomId = {{ room.id }};
+    const isSupport = {{ 1 if is_support else 0 }};
+    const currentUserRole = {{ session.get('user_role')|tojson }};
+    const currentUserId = {{ session.get('user_id') }};
+
+    const initialMessages = {{ messages | tojson | safe }};
+    const listEl = document.getElementById('messages');
+    const inputEl = document.getElementById('message-input');
+    const formEl = document.getElementById('send-form');
+
+    function formatTime(ts){
+      try { return new Date(ts).toLocaleString(); } catch(e){ return ts; }
+    }
+
+    const roleMap = { user: 'customer', seller: 'seller', admin: 'admin', support: 'admin', rider: 'rider' };
+    function normalizeRole(role){ return roleMap[(role || '').toLowerCase()] || (role || 'customer'); }
+
+    function getInitials(firstName, lastName) {
+      const f = (firstName || '').trim().charAt(0).toUpperCase();
+      const l = (lastName || '').trim().charAt(0).toUpperCase();
+      return (f + l) || '?';
+    }
+
+    function renderOne(m){
+      const me = Number(m.user_id) === Number(currentUserId);
+      const roleLabel = normalizeRole(m.sender_role || m.user_role || '');
+      const firstName = m.first_name || '';
+      const lastName = m.last_name || '';
+      const displayName = (firstName + ' ' + lastName).trim() || (me ? 'You' : roleLabel || 'User');
+      const initials = getInitials(firstName, lastName);
+      const title = `${displayName}${roleLabel && roleLabel !== 'customer' ? ' (' + roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1) + ')' : ''}`;
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = `msg ${me ? 'user' : 'support'}`;
+      wrapper.innerHTML = `
+        <div class="msg-avatar" title="${title}">${initials}</div>
+        <div class="msg-content">
+          <div class="msg-header">${displayName}</div>
+          <div class="bubble">
+            <div>${String(m.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <div class="meta">${formatTime(m.created_at || m.timestamp)}</div>
+          </div>
+        </div>`;
+      listEl.appendChild(wrapper);
+      console.log('[Chat] Rendered message:', {user_id: m.user_id, sender_role: m.sender_role, className: wrapper.className});
+    }
+
+    function renderAll(){
+      listEl.innerHTML = '';
+      (initialMessages || []).forEach(renderOne);
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+
+    function appendAndScroll(m){ renderOne(m); listEl.scrollTop = listEl.scrollHeight; }
+
+    // Force Socket.IO connection and join room
+    console.log('[Chat] Initializing Socket.IO for room', roomId);
+    if (typeof io === 'undefined') {
+      console.error('[Chat] Socket.IO library not loaded!');
+    } else {
+      window.socket = window.socket || io();
+      console.log('[Chat] Socket instance:', window.socket);
+      
+      window.socket.on('connect', function(){
+        console.log('[Chat] Socket connected, joining room', roomId);
+        window.socket.emit('join_chat_room', { room_id: roomId });
+      });
+      
+      window.socket.on('disconnect', function(){
+        console.warn('[Chat] Socket disconnected');
+      });
+      
+      window.socket.on('joined_room', function(p){
+        console.log('[Chat] Successfully joined room', p);
+      });
+      
+      window.socket.on('error', function(e){
+        console.error('[Chat] Socket error', e);
+      });
+      
+      window.socket.on('new_message', function(m){
+        console.log('[Chat] Received new_message event', m);
+        if (Number(m.room_id) === Number(roomId)) {
+          console.log('[Chat] Appending message to UI');
+          appendAndScroll(m);
+        } else {
+          console.log('[Chat] Message for different room, ignoring');
+        }
+      });
+      
+      // If already connected, join immediately
+      if (window.socket.connected) {
+        console.log('[Chat] Socket already connected, joining room');
+        window.socket.emit('join_chat_room', { room_id: roomId });
+      }
+      
+      // Mark read on focus
+      function markRead(){ window.socket.emit('mark_chat_read', { room_id: roomId }); }
+      window.addEventListener('focus', markRead);
+      setTimeout(markRead, 500);
+      
+      // Leave on unload
+      window.addEventListener('beforeunload', function(){
+        try { window.socket.emit('leave_chat_room', { room_id: roomId }); } catch(e){}
+      });
+    }
+
+    // Send: use Socket.IO if connected, otherwise HTTP fallback
+    formEl.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const text = (inputEl.value || '').trim();
+      if (!text) return;
+      
+      console.log('[Chat] Sending message:', text);
+      
+      try {
+        if (window.socket && window.socket.connected) {
+          console.log('[Chat] Emitting send_chat_message via Socket.IO');
+          window.socket.emit('send_chat_message', { room_id: roomId, message: text });
+          inputEl.value = '';
+          console.log('[Chat] Message sent via Socket.IO');
+          return;
+        }
+        
+        console.warn('[Chat] Socket not connected, using HTTP fallback');
+        const csrf = (document.querySelector('meta[name="csrf-token"]')||{}).content || '';
+        const resp = await fetch("{{ url_for('chat.api_send_message', room_id=room.id) }}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf
+          },
+          body: JSON.stringify({ message: text })
+        });
+        if (!resp.ok) throw new Error('HTTP send failed');
+        console.log('[Chat] Message sent via HTTP');
+        // Optimistic append for HTTP fallback
+        appendAndScroll({
+          room_id: roomId,
+          user_id: currentUserId,
+          message: text,
+          is_support: isSupport,
+          created_at: new Date().toISOString(),
+          first_name: '',
+          last_name: '',
+          user_role: currentUserRole,
+          sender_role: normalizeRole(currentUserRole)
+        });
+        inputEl.value = '';
+      } catch(err){
+        console.error('[Chat] Error sending message:', err);
+      }
+    });
+
+    renderAll();
+  })();
+</script>
+{% endblock %}

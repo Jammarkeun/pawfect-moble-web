@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Reviews for {{ product.name }} - Pawfect Finds{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('public.landing') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.product_detail', product_id=product.id) }}">{{ product.name }}</a></li>
+            <li class="breadcrumb-item active">Reviews</li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ avg_rating|default(0)|round(1) }}</h1>
+                    <div class="mb-2">
+                        {% for i in range(5) %}
+                        <i class="fas fa-star{% if i < avg_rating|int %} text-warning{% else %} text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted">{{ reviews|length }} review(s)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            {% if current_user and current_user.role == 'customer' %}
+            <div class="mb-3">
+                <a href="{{ url_for('review.add_review', product_id=product.id) }}" class="btn btn-primary">Write a Review</a>
+            </div>
+            {% endif %}
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">{{ review.user_name or 'Anonymous' }}</h6>
+                            <small class="text-muted">{{ review.created_at[:10] }}</small>
+                        </div>
+                        <div class="mb-2">
+                            {% for i in range(review.rating|int) %}
+                            <i class="fas fa-star text-warning"></i>
+                            {% endfor %}
+                            {% for i in range(5 - review.rating|int) %}
+                            <i class="far fa-star text-muted"></i>
+                            {% endfor %}
+                        </div>
+                        {% if review.comment %}<p class="mb-1">{{ review.comment }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                <p class="lead">No reviews yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

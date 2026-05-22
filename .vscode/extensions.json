@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "wholroyd.jinja",
+        "ms-python.python",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-python.vscode-pylance"
+    ]
+}

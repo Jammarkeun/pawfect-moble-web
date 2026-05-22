@@ -1,0 +1,128 @@
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Reorder Suggestions - Inventory{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-0">🔄 Reorder Suggestions</h2>
+            <p class="text-muted">Based on sales velocity and current stock levels</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Products Needing Restock</h5>
+                    <a href="{{ url_for('seller.inventory') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Inventory
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if suggestions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Avg Daily Sales</th>
+                                    <th>Last 30 Days</th>
+                                    <th>Days Until Stockout</th>
+                                    <th>Suggested Reorder Qty</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in suggestions %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td>{{ item.sku or '-' }}</td>
+                                    <td>
+                                        {% if item.current_stock == 0 %}
+                                        <span class="badge bg-danger">{{ item.current_stock }}</span>
+                                        {% elif item.current_stock <= item.low_stock_threshold %}
+                                        <span class="badge bg-warning">{{ item.current_stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success">{{ item.current_stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.low_stock_threshold }}</td>
+                                    <td>{{ "%.1f"|format(item.avg_daily_sales) }}</td>
+                                    <td>{{ item.last_30_days_sales }}</td>
+                                    <td>
+                                        {% if item.days_until_stockout <= 7 %}
+                                        <span class="badge bg-danger">{{ item.days_until_stockout }} days</span>
+                                        {% elif item.days_until_stockout <= 14 %}
+                                        <span class="badge bg-warning">{{ item.days_until_stockout }} days</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ item.days_until_stockout }} days</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ item.suggested_reorder_qty }}</strong> units</td>
+                                    <td>
+                                        {% if item.days_until_stockout <= 3 %}
+                                        <span class="badge bg-danger">URGENT</span>
+                                        {% elif item.days_until_stockout <= 7 %}
+                                        <span class="badge bg-warning">HIGH</span>
+                                        {% elif item.days_until_stockout <= 14 %}
+                                        <span class="badge bg-info">MEDIUM</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">LOW</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Great! No products need immediate restocking based on current sales velocity.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if suggestions %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Reorder Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Total Products</h6>
+                            <h4>{{ suggestions|length }}</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Urgent (≤3 days)</h6>
+                            <h4 class="text-danger">{{ suggestions|selectattr('days_until_stockout', 'le', 3)|list|length }}</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">High Priority (≤7 days)</h6>
+                            <h4 class="text-warning">{{ suggestions|selectattr('days_until_stockout', 'le', 7)|list|length }}</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Total Suggested Units</h6>
+                            <h4>{{ suggestions|sum(attribute='suggested_reorder_qty')|int }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+

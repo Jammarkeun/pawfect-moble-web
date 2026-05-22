@@ -1,0 +1,428 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Admin Dashboard - Pawfect Finds{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    /* ============================
+   GLOBAL STYLES
+============================ */
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #D7CCC8;
+    --tan: #EBD5B3;
+    --white: #FFFFFF;
+    --beige-bg: #FAF3E0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background-color: var(--beige-bg);
+}
+
+/* ============================
+   NAVBAR
+============================ */
+.navbar {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 56px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1500;
+}
+
+/* Remove left spacing so hamburger stays at the edge */
+.navbar .container {
+    padding-left: 0 !important;
+}
+
+/* ============================
+   SIDEBAR
+============================ */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background-color: var(--brown-dark);
+    color: white;
+    padding-top: 56px; /* below navbar */
+    transition: transform 0.3s ease-in-out;
+    z-index: 1400;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-260px);
+}
+
+/* Sidebar links */
+.sidebar a {
+    display: block;
+    padding: 14px 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.sidebar a:hover {
+    background-color: #A0522D;
+}
+
+/* ============================
+   HAMBURGER BUTTON
+============================ */
+.sidebar-toggle-btn {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: translateX(0) !important;
+
+    background: transparent;
+    border: none;
+    color: #8B4513;
+    font-size: 1.6rem;
+
+    width: 56px;
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    z-index: 2000 !important;
+}
+
+/* ============================
+   MAIN CONTENT
+============================ */
+.main-content {
+    margin-left: 260px;
+    padding: 80px 20px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: 0;
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-260px);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Header -->
+<header class="dashboard-header">
+    <div>
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <p style="color: var(--accent-brown); margin: 5px 0 0 0;">Welcome back, {{ current_user.first_name }}!</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.analytics') }}" class="action-btn">
+            <i class="fas fa-chart-line"></i> View Analytics
+        </a>
+    </div>
+</header>
+
+<!-- Stats Cards -->
+<section class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-store"></i></div>
+        <div class="stat-value">{{ stats.total_sellers }}</div>
+        <div class="stat-label">Active Sellers</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-value">{{ stats.pending_requests }}</div>
+        <div class="stat-label">Pending Requests</div>
+    </div>
+    <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+        <div class="stat-value">{{ stats.total_orders }}</div>
+        <div class="stat-label">Total Orders</div>
+    </div>
+</section>
+
+<!-- Content Grid -->
+<div class="content-grid">
+    <!-- Main Content -->
+    <div class="main-section">
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="{{ url_for('admin.seller_requests') }}" class="action-btn">
+                    <i class="fas fa-handshake"></i> Manage Seller Requests
+                </a>
+                <a href="{{ url_for('admin.manage_users') }}" class="action-btn">
+                    <i class="fas fa-users"></i> Manage Users
+                </a>
+                <a href="{{ url_for('admin.manage_products') }}" class="action-btn">
+                    <i class="fas fa-box"></i> Manage Products
+                </a>
+                <a href="{{ url_for('admin.manage_orders') }}" class="action-btn">
+                    <i class="fas fa-shopping-cart"></i> Manage Orders
+                </a>
+            </div>
+        </section>
+
+        <!-- Revenue Chart -->
+        <section class="quick-actions">
+            <h3><i class="fas fa-chart-line"></i> Revenue Trends (Last 30 Days)</h3>
+            <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <ul class="activity-list">
+                {% if recent_requests %}
+                    {% for req in recent_requests[:3] %}
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="title">New seller request from {{ req.first_name }} {{ req.last_name }}</div>
+                            <div class="meta">{{ req.requested_at.strftime('%b %d, %Y') }}</div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% endif %}
+                {% if recent_users %}
+                    {% for user in recent_users[:2] %}
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="title">New user registered: {{ user.first_name }} {{ user.last_name }}</div>
+                            <div class="meta">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'Unknown' }}</div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </section>
+    </div>
+
+    <!-- Sidebar Widgets -->
+    <div class="sidebar-widgets">
+        <!-- Order Status Chart -->
+        <section class="system-status">
+            <h4><i class="fas fa-chart-pie"></i> Order Status</h4>
+            <canvas id="orderStatusChart" style="max-height: 250px;"></canvas>
+        </section>
+
+        <!-- User Registration Chart -->
+        <section class="system-status">
+            <h4><i class="fas fa-users"></i> User Growth</h4>
+            <canvas id="userRegistrationChart" style="max-height: 200px;"></canvas>
+        </section>
+
+        <!-- System Status -->
+        <section class="system-status">
+            <h4><i class="fas fa-server"></i> System Status</h4>
+            <div class="status-item">
+                <span class="status-label">Server Status</span>
+                <span class="status-value">Online <span class="status-indicator"></span></span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Database</span>
+                <span class="status-value">Connected <span class="status-indicator"></span></span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Pending Orders</span>
+                <span class="status-value">{{ stats.pending_orders|default(0) }}</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Active Sessions</span>
+                <span class="status-value">{{ stats.total_users }}</span>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script>
+// Fetch chart data from API
+fetch('{{ url_for("admin.dashboard_stats") }}')
+    .then(response => response.json())
+    .then(data => {
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: data.revenue.map(d => new Date(d.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})),
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: data.revenue.map(d => d.revenue),
+                    borderColor: '#8B4513',
+                    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#8B4513',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        callbacks: {
+                            label: function(context) {
+                                return 'Revenue: $' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Order Status Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(orderStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.orderStatus.map(d => d.status.charAt(0).toUpperCase() + d.status.slice(1)),
+                datasets: [{
+                    data: data.orderStatus.map(d => d.count),
+                    backgroundColor: [
+                        '#8B4513',  // Brown
+                        '#4CAF50',  // Green
+                        '#FF9800',  // Orange
+                        '#2196F3',  // Blue
+                        '#F44336',  // Red
+                        '#9C27B0'   // Purple
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12
+                    }
+                }
+            }
+        });
+
+        // User Registration Chart
+        const userRegCtx = document.getElementById('userRegistrationChart').getContext('2d');
+        const last7Days = data.userRegistration.slice(-7);
+        new Chart(userRegCtx, {
+            type: 'bar',
+            data: {
+                labels: last7Days.map(d => new Date(d.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})),
+                datasets: [{
+                    label: 'New Users',
+                    data: last7Days.map(d => d.users),
+                    backgroundColor: 'rgba(33, 150, 243, 0.7)',
+                    borderColor: '#2196F3',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error loading chart data:', error);
+    });
+</script>
+{% endblock %}

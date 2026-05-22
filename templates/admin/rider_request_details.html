@@ -1,0 +1,289 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rider Request Details - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #2196F3;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .info-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-item {
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        color: #333;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .document-preview {
+        background: #f0f0f0;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    .document-preview:hover {
+        background: #e8e8e8;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #ddd;
+    }
+    
+    .action-buttons form {
+        flex: 1;
+    }
+</style>
+
+<header class="dashboard-header mb-4">
+    <div>
+        <h1><i class="fas fa-motorcycle"></i> Rider Request Details</h1>
+        <p style="color: #666; margin: 5px 0 0 0;">Review and manage rider application</p>
+    </div>
+</header>
+
+{% if application_data %}
+    <!-- User Information -->
+    <div class="detail-card">
+        <h3 class="section-title"><i class="fas fa-user me-2"></i>Personal Information</h3>
+        
+        <div class="info-group">
+            <div class="info-item">
+                <div class="info-label">Full Name</div>
+                <div class="info-value">{{ user_data.first_name }} {{ user_data.last_name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ user_data.email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Phone</div>
+                <div class="info-value">{{ user_data.phone or 'N/A' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    <span class="status-badge status-{{ application_data.status }}">
+                        {{ application_data.status.title() }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vehicle Information -->
+    <div class="detail-card">
+        <h3 class="section-title"><i class="fas fa-car me-2"></i>Vehicle Information</h3>
+        
+        <div class="info-group">
+            <div class="info-item">
+                <div class="info-label">Vehicle Type</div>
+                <div class="info-value">{{ application_data.vehicle_type|capitalize }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Vehicle Model</div>
+                <div class="info-value">{{ application_data.vehicle_model or 'Not Provided' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Plate Number</div>
+                <div class="info-value">{{ application_data.vehicle_plate_number or 'Not Provided' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Applied Date</div>
+                <div class="info-value">{{ application_data.created_at|format_datetime('%B %d, %Y at %I:%M %p') if application_data.created_at else 'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Documents -->
+    <div class="detail-card">
+        <h3 class="section-title"><i class="fas fa-file me-2"></i>Documents</h3>
+        
+        <div class="row">
+            {% if application_data.government_id_path %}
+            <div class="col-md-6 mb-3">
+                <div class="document-preview">
+                    <i class="fas fa-id-card fa-2x mb-2" style="color: #FF6F00;"></i>
+                    <p class="mb-0"><strong>Government ID</strong></p>
+                    <small class="text-muted">Uploaded</small>
+                    <br>
+                    <a href="{{ application_data.government_id_path }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-download me-1"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if application_data.vehicle_registration_path %}
+            <div class="col-md-6 mb-3">
+                <div class="document-preview">
+                    <i class="fas fa-certificate fa-2x mb-2" style="color: #4CAF50;"></i>
+                    <p class="mb-0"><strong>Vehicle Registration</strong></p>
+                    <small class="text-muted">Uploaded</small>
+                    <br>
+                    <a href="{{ application_data.vehicle_registration_path }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-download me-1"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if application_data.profile_photo_path %}
+            <div class="col-md-6 mb-3">
+                <div class="document-preview">
+                    <i class="fas fa-image fa-2x mb-2" style="color: #2196F3;"></i>
+                    <p class="mb-0"><strong>Profile Photo</strong></p>
+                    <small class="text-muted">Uploaded</small>
+                    <br>
+                    <a href="{{ application_data.profile_photo_path }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-download me-1"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if application_data.clearance_path %}
+            <div class="col-md-6 mb-3">
+                <div class="document-preview">
+                    <i class="fas fa-check-circle fa-2x mb-2" style="color: #9C27B0;"></i>
+                    <p class="mb-0"><strong>Clearance Certificate</strong></p>
+                    <small class="text-muted">Uploaded</small>
+                    <br>
+                    <a href="{{ application_data.clearance_path }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-download me-1"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Admin Notes (if any) -->
+    {% if application_data.admin_notes %}
+    <div class="detail-card" style="background: #f9f9f9; border-left: 4px solid #2196F3;">
+        <h3 class="section-title" style="border-bottom-color: #2196F3;">
+            <i class="fas fa-comment me-2"></i>Admin Notes
+        </h3>
+        <div style="color: #333; line-height: 1.6;">{{ application_data.admin_notes }}</div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    {% if application_data.status == 'pending' %}
+    <div class="detail-card" style="background: #f0f9ff; border-left: 4px solid #2196F3;">
+        <h3 class="section-title" style="border-bottom-color: #2196F3;">
+            <i class="fas fa-tasks me-2"></i>Take Action
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-3"><i class="fas fa-check text-success me-2"></i>Approve Application</h5>
+                <form method="POST" action="{{ url_for('admin_requests.approve_rider_request', application_id=application_data.id) }}">
+                    {{ csrf_token() }}
+                    <div class="form-group mb-3">
+                        <label for="approve_notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="approve_notes" name="admin_notes" rows="3" placeholder="Add any notes for the rider..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-check me-2"></i>Approve Rider
+                    </button>
+                </form>
+            </div>
+            
+            <div class="col-md-6">
+                <h5 class="mb-3"><i class="fas fa-times text-danger me-2"></i>Reject Application</h5>
+                <form method="POST" action="{{ url_for('admin_requests.reject_rider_request', application_id=application_data.id) }}">
+                    {{ csrf_token() }}
+                    <div class="form-group mb-3">
+                        <label for="reject_notes" class="form-label">Rejection Reason</label>
+                        <textarea class="form-control" id="reject_notes" name="admin_notes" rows="3" placeholder="Explain why the application is being rejected..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-lg w-100">
+                        <i class="fas fa-times me-2"></i>Reject Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{{ url_for('admin_requests.rider_requests') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Rider Requests
+        </a>
+    </div>
+{% else %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        Rider application not found.
+    </div>
+{% endif %}
+
+<script>
+    // Add CSRF token to forms
+    function csrf_token() {
+        return document.querySelector('[name="csrf_token"]').value;
+    }
+</script>
+{% endblock %}

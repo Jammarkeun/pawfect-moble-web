@@ -1,0 +1,200 @@
+/* ===================================
+   PAWFECT FINDS - ONBOARDING STYLES
+   =================================== */
+
+/* Overlay */
+.onboarding-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Tooltip Container */
+.onboarding-tooltip {
+    position: absolute;
+    z-index: 10001;
+    max-width: 400px;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.onboarding-tooltip.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Tooltip Content */
+.onboarding-tooltip-content {
+    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    border: 2px solid var(--brown-primary, #6D4C41);
+}
+
+[data-theme="dark"] .onboarding-tooltip-content {
+    background: var(--card-bg, #2a2a2a);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Close Button */
+.onboarding-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary, #6b7280);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.onboarding-close:hover {
+    background: rgba(109, 76, 65, 0.1);
+    color: var(--brown-primary, #6D4C41);
+    transform: rotate(90deg);
+}
+
+/* Header */
+.onboarding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-right: 30px;
+}
+
+.onboarding-title {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-primary, #333);
+    font-weight: 700;
+}
+
+.onboarding-counter {
+    background: var(--brown-primary, #6D4C41);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Content Text */
+.onboarding-text {
+    color: var(--text-secondary, #6b7280);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Footer */
+.onboarding-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.onboarding-footer .btn {
+    flex: 1;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+/* Arrow */
+.onboarding-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--brown-primary, #6D4C41);
+}
+
+/* Highlighted Element */
+.onboarding-highlight {
+    position: relative;
+    z-index: 10002 !important;
+    box-shadow: 0 0 0 4px var(--brown-primary, #6D4C41),
+                0 0 0 8px rgba(109, 76, 65, 0.3) !important;
+    border-radius: 8px !important;
+    animation: highlightPulse 2s infinite;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px var(--brown-primary, #6D4C41),
+                    0 0 0 8px rgba(109, 76, 65, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 6px var(--brown-primary, #6D4C41),
+                    0 0 0 12px rgba(109, 76, 65, 0.5);
+    }
+}
+
+/* Body when onboarding is active */
+body.onboarding-active {
+    overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .onboarding-tooltip {
+        max-width: calc(100vw - 40px);
+        left: 20px !important;
+        right: 20px;
+    }
+
+    .onboarding-tooltip-content {
+        padding: 15px;
+    }
+
+    .onboarding-title {
+        font-size: 1rem;
+    }
+
+    .onboarding-text {
+        font-size: 0.9rem;
+    }
+
+    .onboarding-footer {
+        flex-direction: column;
+    }
+
+    .onboarding-footer .btn {
+        width: 100%;
+    }
+}
+
+/* Animation for tooltip appearance */
+@keyframes tooltipSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth scrolling for highlighted elements */
+.onboarding-active * {
+    scroll-behavior: smooth;
+}

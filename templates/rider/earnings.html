@@ -1,0 +1,567 @@
+{% extends "rider/base.html" %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block rider_content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-wallet text-info me-2"></i>Earnings & Payments
+            </h1>
+            <p class="text-muted mb-0">Track your earnings from deliveries and manage payouts</p>
+        </div>
+    </div>
+
+    <!-- Earnings Summary Cards -->
+    <div class="row mb-4">
+        <!-- Total Earnings Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Earnings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱{{ "%.2f"|format(total_earnings or 0.00) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Earnings Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Earnings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱{{ "%.2f"|format(pending_earnings or 0.00) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paid Earnings Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Paid Earnings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱{{ "%.2f"|format(paid_earnings or 0.00) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payout Method Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Payout Method</div>
+                            <div class="h6 mb-0 text-gray-800">
+                                {% if payout_method %}
+                                    <span class="badge bg-info">{{ payout_method }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Set</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="#setPayoutModal" data-bs-toggle="modal" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-gear"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payout Request Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if pending_earnings > 0 %}
+            <div class="card shadow border-left-success">
+                <div class="card-header bg-success bg-gradient text-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Ready to Request Payout</h6>
+                    <span class="badge bg-light text-success fs-6">₱{{ "%.2f"|format(pending_earnings) }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <p class="text-muted mb-3">You have <strong>₱{{ "%.2f"|format(pending_earnings) }}</strong> in pending earnings available for payout.</p>
+                            <p class="text-muted small mb-0">Payouts are typically processed within 1-2 business days after approval.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#payoutRequestModal">
+                                <i class="fas fa-hand-holding-usd me-2"></i>Request Payout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow border-left-warning">
+                <div class="card-header bg-warning bg-gradient text-white py-3">
+                    <h6 class="m-0 font-weight-bold">No Pending Earnings</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">You don't have any pending earnings to request a payout for at this time.</p>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Earnings appear here after your deliveries are marked as complete and approved.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Earnings Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-gray-800">Filter Earnings History</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('rider.earnings') }}" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="statusFilter" class="form-label">Status</label>
+                            <select name="status" id="statusFilter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-gray-800">Earnings History</h6>
+                </div>
+                <div class="card-body">
+                    {% if earnings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Delivery Date</th>
+                                    <th>Base Fee</th>
+                                    <th>Distance Fee</th>
+                                    <th>Tip</th>
+                                    <th>Total Earning</th>
+                                    <th>Status</th>
+                                    <th>Paid Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for earning in earnings %}
+                                <tr>
+                                    <td>
+                                        <a href="#" class="text-decoration-none fw-bold">
+                                            #{{ earning.order_id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ earning.created_at|format_datetime('%b %d, %Y %I:%M %p') if earning.created_at else 'N/A' }}
+                                    </td>
+                                    <td>₱{{ "%.2f"|format(earning.base_fee or 0.00) }}</td>
+                                    <td>₱{{ "%.2f"|format(earning.distance_fee or 0.00) }}</td>
+                                    <td>₱{{ "%.2f"|format(earning.tip_amount or 0.00) }}</td>
+                                    <td class="fw-bold text-success">₱{{ "%.2f"|format(earning.total_earning or 0.00) }}</td>
+                                    <td>
+                                        {% if earning.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif earning.status == 'paid' %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ earning.status|capitalize }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if earning.paid_at %}
+                                            {{ earning.paid_at|format_datetime('%b %d, %Y') }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#earningDetailModal" onclick="showEarningDetail({{ earning.id }}, '{{ earning.status }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pagination.pages > 1 %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.earnings', page=1, status=status_filter) }}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.earnings', page=pagination.prev_num, status=status_filter) }}">Previous</a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == pagination.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('rider.earnings', page=page_num, status=status_filter) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.earnings', page=pagination.next_num, status=status_filter) }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.earnings', page=pagination.pages, status=status_filter) }}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No earnings found. Start delivering to earn money!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Set Payout Method Modal -->
+<div class="modal fade" id="setPayoutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Payout Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="payoutMethodForm" method="POST" action="{{ url_for('rider.set_payout_method') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="payoutMethod" class="form-label">Select Payout Method</label>
+                        <select name="payout_method" id="payoutMethod" class="form-select" required>
+                            <option value="">-- Choose Method --</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="gcash">GCash</option>
+                            <option value="cash_pickup">Cash Pickup</option>
+                        </select>
+                    </div>
+
+                    <!-- Bank Transfer Details -->
+                    <div id="bankDetails" class="d-none">
+                        <div class="mb-3">
+                            <label for="bankName" class="form-label">Bank Name</label>
+                            <input type="text" name="bank_name" id="bankName" class="form-control" placeholder="e.g., BDO, BPI, Metrobank" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="accountNumber" class="form-label">Account Number</label>
+                            <input type="text" name="account_number" id="accountNumber" class="form-control" placeholder="Account Number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="accountName" class="form-label">Account Name</label>
+                            <input type="text" name="account_name" id="accountName" class="form-control" placeholder="Full Name on Account" required>
+                        </div>
+                    </div>
+
+                    <!-- GCash Details -->
+                    <div id="gcashDetails" class="d-none">
+                        <div class="mb-3">
+                            <label for="gcashNumber" class="form-label">GCash Number</label>
+                            <input type="tel" name="gcash_number" id="gcashNumber" class="form-control" placeholder="09XX-XXX-XXXX" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gcashName" class="form-label">Registered Name</label>
+                            <input type="text" name="gcash_name" id="gcashName" class="form-control" placeholder="Full Name" required>
+                        </div>
+                    </div>
+
+                    <!-- Cash Pickup Details -->
+                    <div id="pickupDetails" class="d-none">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            You can pick up your earnings at our office during business hours.
+                        </div>
+                        <div class="mb-3">
+                            <label for="pickupLocation" class="form-label">Preferred Pickup Location</label>
+                            <select name="pickup_location" id="pickupLocation" class="form-select" required>
+                                <option value="">-- Select Location --</option>
+                                <option value="main_office">Main Office</option>
+                                <option value="branch_1">Branch 1</option>
+                                <option value="branch_2">Branch 2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Payout Request Modal -->
+<div class="modal fade" id="payoutRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Payout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="payoutRequestForm" method="POST" action="{{ url_for('rider.request_payout') }}">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Available Amount:</strong> ₱{{ "%.2f"|format(pending_earnings or 0.00) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="payoutAmount" class="form-label">Amount to Payout</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" step="0.01" min="0.01" max="{{ pending_earnings }}" name="amount" id="payoutAmount" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <small class="text-muted">Maximum available: ₱{{ "%.2f"|format(pending_earnings) }}</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="payoutMethodSelect" class="form-label">Payout Method</label>
+                        <select name="payout_method" id="payoutMethodSelect" class="form-select" required>
+                            <option value="">-- Select Method --</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="gcash">GCash</option>
+                            <option value="cash_pickup">Cash Pickup</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="payoutNotes" class="form-label">Notes (Optional)</label>
+                        <textarea name="notes" id="payoutNotes" class="form-control" rows="3" placeholder="Any special instructions or notes..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="confirmPayoutTerms" required>
+                        <label class="form-check-label" for="confirmPayoutTerms">
+                            I confirm that the payout method information is correct
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Request Payout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Earning Detail Modal -->
+<div class="modal fade" id="earningDetailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Earning Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="earningDetailContent">
+                <!-- Content loaded via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle payout method details
+document.getElementById('payoutMethod').addEventListener('change', function() {
+    const method = this.value;
+    document.getElementById('bankDetails').classList.add('d-none');
+    document.getElementById('gcashDetails').classList.add('d-none');
+    document.getElementById('pickupDetails').classList.add('d-none');
+
+    if (method === 'bank_transfer') {
+        document.getElementById('bankDetails').classList.remove('d-none');
+        document.getElementById('bankName').required = true;
+        document.getElementById('accountNumber').required = true;
+        document.getElementById('accountName').required = true;
+    } else if (method === 'gcash') {
+        document.getElementById('gcashDetails').classList.remove('d-none');
+        document.getElementById('gcashNumber').required = true;
+        document.getElementById('gcashName').required = true;
+    } else if (method === 'cash_pickup') {
+        document.getElementById('pickupDetails').classList.remove('d-none');
+    }
+});
+
+// Show earning detail modal
+function showEarningDetail(earningId, status) {
+    // This would typically fetch data from an API
+    const detailContent = `
+        <div class="row">
+            <div class="col-6">
+                <p><strong>Earning ID:</strong> ${earningId}</p>
+                <p><strong>Status:</strong> <span class="badge bg-${status === 'pending' ? 'warning text-dark' : 'success'}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></p>
+            </div>
+            <div class="col-6 text-end">
+                <p><small class="text-muted">More details available in your account</small></p>
+            </div>
+        </div>
+    `;
+    document.getElementById('earningDetailContent').innerHTML = detailContent;
+}
+
+// Handle payout request form
+document.getElementById('payoutRequestForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = document.getElementById('payoutAmount').value;
+    const maxAmount = {{ pending_earnings }};
+    
+    if (parseFloat(amount) > parseFloat(maxAmount)) {
+        alert('Amount exceeds available earnings!');
+        return;
+    }
+    
+    this.submit();
+});
+</script>
+
+<style>
+.table-hover tbody tr:hover {
+    background-color: rgba(93, 64, 55, 0.05);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.modal-content {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.table th {
+    background-color: #f8fafc;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table td {
+    border-color: #edf2f7;
+    vertical-align: middle;
+}
+
+.btn-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+</style>
+
+<script>
+// Handle payout method selection
+document.getElementById('payoutMethod').addEventListener('change', function() {
+    // Hide all sections first
+    document.getElementById('bankDetails').classList.add('d-none');
+    document.getElementById('gcashDetails').classList.add('d-none');
+    document.getElementById('pickupDetails').classList.add('d-none');
+    
+    // Remove required attribute from all fields
+    document.querySelectorAll('[name^="bank_"], [name^="gcash_"], [name="pickup_location"]').forEach(field => {
+        field.removeAttribute('required');
+    });
+    
+    // Show appropriate section and set required attributes
+    const method = this.value;
+    if (method === 'bank_transfer') {
+        document.getElementById('bankDetails').classList.remove('d-none');
+        document.getElementById('bankName').setAttribute('required', 'required');
+        document.getElementById('accountNumber').setAttribute('required', 'required');
+        document.getElementById('accountName').setAttribute('required', 'required');
+    } else if (method === 'gcash') {
+        document.getElementById('gcashDetails').classList.remove('d-none');
+        document.getElementById('gcashNumber').setAttribute('required', 'required');
+        document.getElementById('gcashName').setAttribute('required', 'required');
+    } else if (method === 'cash_pickup') {
+        document.getElementById('pickupDetails').classList.remove('d-none');
+        document.getElementById('pickupLocation').setAttribute('required', 'required');
+    }
+});
+</script>
+{% endblock %}

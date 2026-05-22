@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Moderate Reviews - Pawfect Finds Admin{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Moderate Reviews</h1>
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="mb-1">{{ review.user_name or 'Anonymous' }} on Product #{{ review.product_id }}</h6>
+                        <div class="mb-2">
+                            {% for i in range(review.rating|int) %}
+                            <i class="fas fa-star text-warning"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="badge bg-{{ 'warning' if review.status == 'pending' else 'success' }}">{{ review.status }}</span>
+                </div>
+                {% if review.comment %}<p>{{ review.comment }}</p>{% endif %}
+                <div class="mt-2">
+                    <form method="POST" action="{{ url_for('review.approve_review', review_id=review.id) }}" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('review.reject_review', review_id=review.id) }}" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+        <p class="lead">No reviews pending moderation.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

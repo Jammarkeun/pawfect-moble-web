@@ -1,0 +1,324 @@
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Inventory Management - Seller Dashboard{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-0">📦 Inventory Management</h2>
+            <p class="text-muted">Manage stock levels, view alerts, and track inventory value</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Total Products</h6>
+                    <h3 class="card-title mb-0">{{ stock_summary.total_products or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Total Stock Units</h6>
+                    <h3 class="card-title mb-0">{{ stock_summary.total_stock or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Low Stock Items</h6>
+                    <h3 class="card-title mb-0">{{ stock_summary.low_stock_count or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 opacity-75">Out of Stock</h6>
+                    <h3 class="card-title mb-0">{{ stock_summary.out_of_stock_count or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Value Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">💰 Inventory Valuation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Cost Value</h6>
+                            <h4>{{ (valuation.total_value or 0)|currency }}</h4>
+                            <small class="text-muted">Based on cost price</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Retail Value</h6>
+                            <h4>{{ (valuation.retail_value or 0)|currency }}</h4>
+                            <small class="text-muted">Based on selling price</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Potential Profit</h6>
+                            <h4>{{ ((valuation.retail_value or 0) - (valuation.total_value or 0))|currency }}</h4>
+                            <small class="text-muted">If all stock sells at retail</small>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('seller.inventory_valuation') }}" class="btn btn-sm btn-outline-primary mt-3">
+                        <i class="fas fa-chart-line"></i> View Detailed Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    {% if low_stock_alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">⚠️ Low Stock Alerts ({{ low_stock_alerts|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in low_stock_alerts[:5] %}
+                                <tr>
+                                    <td>{{ alert.product_name }}</td>
+                                    <td><span class="badge bg-danger">{{ alert.current_stock }}</span></td>
+                                    <td>{{ alert.threshold_quantity }}</td>
+                                    <td>
+                                        {% if not alert.alert_sent %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Alert Sent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-xs btn-primary acknowledge-alert" data-alert-id="{{ alert.id }}">
+                                            Acknowledge
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('seller.inventory_alerts') }}" class="btn btn-sm btn-outline-warning">
+                        View All Alerts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#bulkUpdateModal">
+                                <i class="fas fa-boxes"></i><br>
+                                Bulk Stock Update
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('seller.reorder_suggestions') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-sync"></i><br>
+                                Reorder Suggestions
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('seller.inventory_valuation') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-dollar-sign"></i><br>
+                                Valuation Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Stock Levels -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Product Stock Levels</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if product.image_url %}
+                                            <img src="{{ url_for('static', filename=product.image_url) }}" 
+                                                 alt="{{ product.name }}" 
+                                                 style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" 
+                                                 class="me-2">
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ product.name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ product.sku or '-' }}</td>
+                                    <td>
+                                        {% if product.stock_quantity == 0 %}
+                                        <span class="badge bg-danger">0</span>
+                                        {% elif product.stock_quantity <= (product.low_stock_threshold or 10) %}
+                                        <span class="badge bg-warning">{{ product.stock_quantity }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success">{{ product.stock_quantity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ product.low_stock_threshold or 10 }}</td>
+                                    <td>
+                                        {% if product.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% elif product.status == 'draft' %}
+                                        <span class="badge bg-secondary">Draft</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ product.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('seller.stock_history', product_id=product.id) }}" 
+                                           class="btn btn-xs btn-outline-primary" title="View History">
+                                            <i class="fas fa-history"></i>
+                                        </a>
+                                        <button class="btn btn-xs btn-outline-secondary edit-threshold" 
+                                                data-product-id="{{ product.id }}" 
+                                                data-threshold="{{ product.low_stock_threshold or 10 }}" 
+                                                title="Edit Threshold">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Update Modal -->
+<div class="modal fade" id="bulkUpdateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Stock Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Enter stock adjustments for multiple products. Positive numbers add stock, negative numbers reduce stock.</p>
+                <div id="bulkUpdateForm">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitBulkUpdate">Update Stock</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Acknowledge alert
+    document.querySelectorAll('.acknowledge-alert').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const alertId = this.dataset.alertId;
+            fetch(`/seller/inventory/alert/${alertId}/acknowledge`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token_value }}'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    this.closest('tr').remove();
+                    alert('Alert acknowledged');
+                }
+            });
+        });
+    });
+
+    // Edit threshold
+    document.querySelectorAll('.edit-threshold').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const currentThreshold = this.dataset.threshold;
+            const newThreshold = prompt('Enter new low stock threshold:', currentThreshold);
+            
+            if (newThreshold !== null && !isNaN(newThreshold)) {
+                fetch(`/seller/inventory/product/${productId}/threshold`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token_value }}'
+                    },
+                    body: JSON.stringify({ threshold: parseInt(newThreshold) })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Threshold updated');
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+
+

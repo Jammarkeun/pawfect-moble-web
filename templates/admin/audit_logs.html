@@ -1,0 +1,268 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Audit Logs - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+.log-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.log-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.log-action {
+    font-weight: 600;
+    color: var(--dark-brown);
+    font-size: 1.1rem;
+}
+
+.log-time {
+    color: var(--accent-brown);
+    font-size: 0.9rem;
+}
+
+.log-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.log-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-brown);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.log-details {
+    background: var(--light-brown);
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #333;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.log-metadata {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 10px;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.filter-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background: var(--primary-brown);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: var(--secondary-brown);
+}
+
+.clear-btn {
+    background: #6c757d;
+}
+
+.clear-btn:hover {
+    background: #5a6268;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.pagination a,
+.pagination span {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--dark-brown);
+    transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+    background: var(--primary-brown);
+    color: white;
+}
+
+.pagination span.active {
+    background: var(--primary-brown);
+    color: white;
+    border-color: var(--primary-brown);
+}
+
+.badge-action {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.badge-approve { background: #d4edda; color: #155724; }
+.badge-reject { background: #f8d7da; color: #721c24; }
+.badge-update { background: #d1ecf1; color: #0c5460; }
+.badge-bulk { background: #fff3cd; color: #856404; }
+.badge-auth { background: #e2e3e5; color: #383d41; }
+</style>
+
+<header class="dashboard-header">
+    <div>
+        <h1><i class="fas fa-clipboard-list"></i> Audit Logs</h1>
+        <p style="color: var(--accent-brown); margin: 5px 0 0 0;">Track all admin actions and system events</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.export_audit_logs', action=action_filter, date_from=date_from, date_to=date_to) }}" class="action-btn" style="margin-right: 10px;">
+            <i class="fas fa-download"></i> Export CSV
+        </a>
+        <span class="badge bg-primary">{{ total_logs }} Total Logs</span>
+    </div>
+</header>
+
+<!-- Filters -->
+<div class="filter-card">
+    <h3 style="margin-bottom: 20px;"><i class="fas fa-filter"></i> Filter Logs</h3>
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}">
+        <div class="filter-row">
+            <input type="text" name="action" class="filter-input" placeholder="Action (e.g., APPROVE)" value="{{ action_filter }}">
+            <input type="date" name="date_from" class="filter-input" placeholder="From Date" value="{{ date_from }}">
+            <input type="date" name="date_to" class="filter-input" placeholder="To Date" value="{{ date_to }}">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="filter-btn"><i class="fas fa-search"></i> Apply Filters</button>
+            <a href="{{ url_for('admin.audit_logs') }}" class="filter-btn clear-btn"><i class="fas fa-times"></i> Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Logs List -->
+{% if logs %}
+    {% for log in logs %}
+    <div class="log-card">
+        <div class="log-header">
+            <div class="log-action">
+                <span class="badge-action {{ 'badge-approve' if 'APPROVE' in log['action'] else 'badge-reject' if 'REJECT' in log['action'] else 'badge-update' if 'UPDATE' in log['action'] else 'badge-bulk' if 'BULK' in log['action'] else 'badge-auth' }}">
+                    {{ log['action'] }}
+                </span>
+            </div>
+            <div class="log-time">
+                <i class="fas fa-clock"></i> {{ log['created_at'].strftime('%B %d, %Y at %I:%M %p') if log['created_at'] else 'Unknown' }}
+            </div>
+        </div>
+        
+        <div class="log-user">
+            <div class="log-user-avatar">
+                {{ log['first_name'][0] if log.get('first_name') else (log['username'][0] if log.get('username') else '?') }}
+            </div>
+            <div>
+                <strong>{{ log['first_name'] }} {{ log['last_name'] }}</strong> <span class="text-muted">(@{{ log['username'] }})</span>
+            </div>
+        </div>
+        
+        {% if log['details'] %}
+        <div class="log-details">
+            {{ log['details'] }}
+        </div>
+        {% endif %}
+        
+        <div class="log-metadata">
+            <span><i class="fas fa-network-wired"></i> {{ log['ip_address'] or 'N/A' }}</span>
+            <span><i class="fas fa-desktop"></i> {{ (log['user_agent'][:50] + '...') if log.get('user_agent') and log['user_agent']|length > 50 else (log['user_agent'] or 'N/A') }}</span>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="{{ url_for('admin.audit_logs', page=page-1, action=action_filter, date_from=date_from, date_to=date_to) }}">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+        {% endif %}
+        
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="active">{{ p }}</span>
+            {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                <a href="{{ url_for('admin.audit_logs', page=p, action=action_filter, date_from=date_from, date_to=date_to) }}">{{ p }}</a>
+            {% elif p == 4 or p == total_pages - 3 %}
+                <span>...</span>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page < total_pages %}
+            <a href="{{ url_for('admin.audit_logs', page=page+1, action=action_filter, date_from=date_from, date_to=date_to) }}">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <div style="background: white; border-radius: 12px; padding: 40px; text-align: center; box-shadow: var(--card-shadow);">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--accent-brown); margin-bottom: 15px;"></i>
+        <h3>No Audit Logs Found</h3>
+        <p style="color: #666;">No logs match your current filters. Try adjusting your search criteria.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

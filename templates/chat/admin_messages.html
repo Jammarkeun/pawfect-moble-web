@@ -1,0 +1,118 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Seller Messages - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<!-- Header -->
+<header class="dashboard-header">
+    <div>
+        <h1><i class="fas fa-comments"></i> Seller Messages</h1>
+        <p style="color: var(--accent-brown); margin: 5px 0 0 0;">Manage seller inquiries and communications</p>
+    </div>
+</header>
+
+<!-- Messages Table -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if rooms and rooms|length %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="30%"><i class="fas fa-user"></i> Seller</th>
+                            <th width="25%"><i class="fas fa-envelope"></i> Email</th>
+                            <th width="35%"><i class="fas fa-comment"></i> Last Message</th>
+                            <th width="10%"><i class="fas fa-bell"></i> Unread</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                            <tr style="cursor: pointer;" onclick="window.location.href='{{ url_for('chat.view_room', room_id=room.id) }}'">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-store" style="color: var(--brown-primary);"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ room.first_name|default('') }} {{ room.last_name|default('') }}</strong>
+                                            {% if room.username %}
+                                                <br><small class="text-muted">@{{ room.username }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ room.email|default('N/A') }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if room.last_message %}
+                                            {{ room.last_message|truncate(60, True) }}
+                                        {% else %}
+                                            <em>No messages yet</em>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if room.unread_count and room.unread_count > 0 %}
+                                        <span class="badge bg-danger">{{ room.unread_count }}</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox" style="font-size: 3rem; color: var(--brown-light); margin-bottom: 1rem; display: block;"></i>
+                <p class="text-muted">No seller messages yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--brown-light);
+    }
+
+    .dashboard-header h1 {
+        color: var(--brown-dark);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .card {
+        border: 1px solid var(--brown-light);
+        border-radius: 8px;
+    }
+
+    .table th {
+        background-color: #f8f7f6;
+        color: var(--brown-dark);
+        font-weight: 600;
+        border-bottom: 2px solid var(--brown-light);
+    }
+
+    .table tbody tr:hover {
+        background-color: #faf9f8;
+    }
+
+    .badge {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.85rem;
+    }
+
+    .avatar-sm {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

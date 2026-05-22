@@ -1,0 +1,262 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rider Payouts - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<!-- Header -->
+<header class="dashboard-header">
+    <div>
+        <h1><i class="fas fa-money-bill-wave"></i> Rider Payouts</h1>
+        <p style="color: var(--accent-brown); margin: 5px 0 0 0;">Manage rider payout requests</p>
+    </div>
+</header>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Payouts</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    {{ stats.pending_count }} requests | ₱{{ "%.2f"|format(stats.pending_amount) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Approved (Unpaid)</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    {{ stats.approved_count }} requests | ₱{{ "%.2f"|format(stats.approved_amount) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Paid Out</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    {{ stats.paid_count }} requests | ₱{{ "%.2f"|format(stats.paid_amount) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold" style="color:rgba(0, 0, 0, 1) !important;">Filter Payout Requests</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.rider_payouts') }}" class="row g-3">
+            <div class="col-md-6">
+                <label for="statusFilter" class="form-label">Status</label>
+                <select name="status" id="statusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Review</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved (Unpaid)</option>
+                    <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Payouts Table -->
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold" style="color:rgba(0, 0, 0, 1) !important;">Payout Requests</h6>
+    </div>
+    <div class="card-body">
+        {% if payouts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Rider</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Requested</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in payouts %}
+                    <tr>
+                        <td><strong>#{{ payout.id }}</strong></td>
+                        <td>
+                            <strong>{{ payout.first_name }} {{ payout.last_name }}</strong><br>
+                            <small class="text-muted">@{{ payout.username }}</small>
+                        </td>
+                        <td><strong>₱{{ "%.2f"|format(payout.amount) }}</strong></td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {% if payout.payout_method == 'bank_transfer' %}
+                                    Bank Transfer
+                                {% elif payout.payout_method == 'gcash' %}
+                                    GCash
+                                {% elif payout.payout_method == 'cash_pickup' %}
+                                    Cash Pickup
+                                {% else %}
+                                    {{ payout.payout_method|title }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if payout.status == 'pending' %}
+                                <span class="badge bg-warning">Pending Review</span>
+                            {% elif payout.status == 'approved' %}
+                                <span class="badge bg-info">Approved</span>
+                            {% elif payout.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif payout.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ payout.requested_at.strftime('%m/%d/%Y %I:%M %p') if payout.requested_at else 'N/A' }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                {% if payout.status == 'pending' %}
+                                    <form method="POST" action="{{ url_for('admin.approve_payout', payout_id=payout.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-success btn-sm" title="Approve">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ payout.id }}" title="Reject">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                {% elif payout.status == 'approved' %}
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#markPaidModal{{ payout.id }}" title="Mark as Paid">
+                                        <i class="fas fa-dollar-sign"></i> Mark Paid
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Reject Modal -->
+                    {% if payout.status == 'pending' %}
+                    <div class="modal fade" id="rejectModal{{ payout.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reject Payout Request #{{ payout.id }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('admin.reject_payout', payout_id=payout.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="adminNotes{{ payout.id }}" class="form-label">Reason for Rejection</label>
+                                            <textarea class="form-control" id="adminNotes{{ payout.id }}" name="admin_notes" rows="3" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Reject</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Mark Paid Modal -->
+                    {% if payout.status == 'approved' %}
+                    <div class="modal fade" id="markPaidModal{{ payout.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Mark Payout as Paid #{{ payout.id }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('admin.mark_payout_paid', payout_id=payout.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="modal-body">
+                                        <div class="alert alert-info">
+                                            <strong>Amount:</strong> ₱{{ "%.2f"|format(payout.amount) }}<br>
+                                            <strong>Method:</strong> 
+                                            {% if payout.payout_method == 'bank_transfer' %}
+                                                Bank Transfer
+                                            {% elif payout.payout_method == 'gcash' %}
+                                                GCash
+                                            {% elif payout.payout_method == 'cash_pickup' %}
+                                                Cash Pickup
+                                            {% else %}
+                                                {{ payout.payout_method|title }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="paidNotes{{ payout.id }}" class="form-label">Payment Reference (Optional)</label>
+                                            <input type="text" class="form-control" id="paidNotes{{ payout.id }}" name="admin_notes" placeholder="Reference number, receipt, etc.">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-success">Confirm Payment</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ prev_page }}&status={{ status_filter or '' }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                
+                {% for page_num in range(1, total_pages + 1) %}
+                    {% if page_num == current_page %}
+                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% elif page_num == 1 or page_num == total_pages or (page_num >= current_page - 2 and page_num <= current_page + 2) %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_num }}&status={{ status_filter or '' }}">{{ page_num }}</a>
+                        </li>
+                    {% elif page_num == current_page - 3 or page_num == current_page + 3 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if not has_next %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ next_page }}&status={{ status_filter or '' }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>No payout requests found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

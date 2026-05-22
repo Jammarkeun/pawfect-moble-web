@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<style>
+/* Rider Dashboard Styles (copied from admin sidebar design) */
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #D7CCC8;
+    --tan: #EBD5B3;
+    --white: #FFFFFF;
+    --beige-bg: #FAF3E0;
+}
+
+/* FORCE SIDEBAR VISIBILITY */
+.sidebar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 56px !important;
+    width: 250px !important;
+    height: calc(100vh - 56px) !important;
+    z-index: 1020 !important;
+    background: var(--brown-dark) !important;
+    color: white !important;
+    padding: 20px 15px !important;
+    overflow-y: auto !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar.collapsed {
+    width: 70px !important;
+    padding: 20px 10px !important;
+}
+
+.sidebar.collapsed .sidebar-header h3,
+.sidebar.collapsed .sidebar-header img {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center !important;
+    padding: 12px 10px !important;
+}
+
+.sidebar.collapsed .sidebar-nav a span {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-nav i {
+    margin-right: 0 !important;
+    font-size: 1.1rem !important;
+}
+
+/* Sidebar header styling */
+.sidebar .sidebar-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .sidebar-header h3 {
+    color: white !important;
+    font-size: 1.3rem;
+    margin: 8px 0 5px 0;
+    font-weight: 600;
+}
+
+/* Sidebar navigation */
+.sidebar .sidebar-nav {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sidebar .sidebar-nav li {
+    margin-bottom: 5px !important;
+}
+
+.sidebar .sidebar-nav a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 12px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: none !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+}
+
+.sidebar .sidebar-nav a:hover,
+.sidebar .sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transform: translateX(5px) !important;
+}
+
+.sidebar .sidebar-nav i {
+    margin-right: 10px !important;
+    width: 18px !important;
+    text-align: center !important;
+    font-size: 0.95rem !important;
+}
+
+/* Scrollbar styling for sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Dashboard Layout */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 0;
+}
+
+/* Main content positioning */
+.main-content {
+    margin-left: 250px !important;
+    margin-top: 56px !important;
+    flex: 1;
+    padding: 25px 30px;
+    background-color: var(--beige-bg);
+    min-height: calc(100vh - 56px);
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 70px !important;
+}
+
+/* Sidebar Toggle Button in Navbar */
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--brown-dark);
+    font-size: 1.3rem;
+    padding: 0;
+    width: 50px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1050;
+}
+
+.sidebar-toggle-btn:hover {
+    color: #5D4037;
+    background: rgba(139, 69, 19, 0.1);
+}
+
+.sidebar-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+/* Adjust navbar for hamburger at left edge */
+.navbar .container {
+    padding-left: 60px;
+}
+
+/* Hide back button (floating) in rider dashboard as well */
+.back-fab {
+    display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0) !important;
+        z-index: 1100 !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+</style>
+
+<div class="rider-dashboard dashboard-layout" data-rider-id="{{ current_user.id if current_user else '' }}">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="riderSidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='2.png') }}" alt="Pawfect Finds" style="width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px;">
+            <h3>Rider</h3>
+        </div>
+        <nav>
+            <ul class="sidebar-nav">
+                <li>
+                    <a href="{{ url_for('rider.dashboard') }}" class="{% if request.endpoint == 'rider.dashboard' %}active{% endif %}" title="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('rider.my_deliveries') }}" class="{% if request.endpoint == 'rider.my_deliveries' %}active{% endif %}" title="My Deliveries">
+                        <i class="fas fa-truck-fast"></i> <span>My Deliveries</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('rider.earnings') }}" class="{% if request.endpoint == 'rider.earnings' %}active{% endif %}" title="Earnings">
+                        <i class="fas fa-wallet"></i> <span>Earnings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.logout') }}" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="riderMainContent">
+        {% block rider_content %}{% endblock %}
+    </main>
+</div>
+
+<!-- Sidebar Toggle Script (same behavior as admin) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create and insert hamburger button in navbar
+    const navbar = document.querySelector('.navbar .container');
+    if (navbar) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'riderSidebarToggleBtn';
+        toggleBtn.className = 'sidebar-toggle-btn';
+        toggleBtn.title = 'Toggle Sidebar';
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        navbar.insertBefore(toggleBtn, navbar.firstChild);
+    }
+
+    const sidebar = document.getElementById('riderSidebar');
+    const mainContent = document.getElementById('riderMainContent');
+    const toggleButton = document.getElementById('riderSidebarToggleBtn');
+
+    if (!sidebar || !mainContent || !toggleButton) return;
+
+    // Load saved state from localStorage
+    const isCollapsed = localStorage.getItem('riderSidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+
+    // Toggle sidebar on button click
+    toggleButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+
+        // Save state to localStorage
+        const collapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('riderSidebarCollapsed', collapsed);
+
+        // Rotate icon slightly for visual feedback
+        const icon = toggleButton.querySelector('i');
+        if (icon) {
+            icon.style.transform = collapsed ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+    });
+});
+</script>
+
+{% endblock %}

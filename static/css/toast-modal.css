@@ -1,0 +1,81 @@
+:root{
+  --pf-brown-primary: var(--primary-color, #8B4513);
+  --pf-brown-secondary: var(--secondary-color, #5D4037);
+  --pf-success: #2e7d32;
+  --pf-danger: #d32f2f;
+  --pf-warning: #f57c00;
+  --pf-surface: #ffffff;
+}
+
+/* Overlay behind the toast modal */
+.pf-toast-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(2px);
+  z-index: 1079; /* just under the container (1080) */
+}
+
+/* Modal-style toast card */
+.pf-toast-modal{
+  width: 100%;
+  border-radius: 18px;
+  background: var(--pf-surface);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 22px 22px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: pf-toast-in 220ms ease-out;
+}
+
+.pf-toast-title{
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--text-color, #333);
+}
+
+.pf-toast-msg{
+  color: #5c4033;
+  text-align: center;
+  margin: 0 6px 6px 6px;
+}
+
+/* Icon badge */
+.pf-toast-icon{
+  width: 88px; height: 88px; border-radius: 50%;
+  display: grid; place-items: center;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08) inset, 0 8px 18px rgba(0,0,0,0.08);
+}
+.pf-toast-icon i{ color: #fff; font-size: 36px; }
+
+.pf-toast-success .pf-toast-icon{ background: linear-gradient(135deg, #43a047, var(--pf-success)); }
+.pf-toast-danger  .pf-toast-icon{ background: linear-gradient(135deg, #ef5350, var(--pf-danger)); }
+.pf-toast-warning .pf-toast-icon{ background: linear-gradient(135deg, #ffa726, var(--pf-warning)); }
+.pf-toast-info    .pf-toast-icon{ background: linear-gradient(135deg, var(--pf-brown-primary), var(--pf-brown-secondary)); }
+
+/* Optional action button style (kept themed) */
+.pf-toast-action{
+  margin-top: 6px;
+  display: none; /* default off; JS can enable */
+}
+.pf-toast-action .btn{
+  min-width: 160px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.pf-toast-success .pf-toast-action .btn{ background: #2e7d32; border-color: #2e7d32; }
+.pf-toast-danger  .pf-toast-action .btn{ background: #d32f2f; border-color: #d32f2f; }
+.pf-toast-info    .pf-toast-action .btn{ background: var(--pf-brown-primary); border-color: var(--pf-brown-primary); }
+.pf-toast-warning .pf-toast-action .btn{ background: #f57c00; border-color: #f57c00; }
+.pf-toast-action .btn:hover{ filter: brightness(0.95); }
+
+@keyframes pf-toast-in{
+  from{ transform: translateY(12px) scale(0.98); opacity: 0; }
+  to{ transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes pf-toast-out{
+  to{ transform: translateY(-8px) scale(0.98); opacity: 0; }
+}

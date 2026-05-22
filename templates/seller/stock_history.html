@@ -1,0 +1,92 @@
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Stock History - {{ product.name }}{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-0">📈 Stock Movement History</h2>
+                <p class="text-muted">{{ product.name }}</p>
+            </div>
+            <a href="{{ url_for('seller.inventory') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Transaction History</h5>
+                </div>
+                <div class="card-body">
+                    {% if history %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Previous Stock</th>
+                                    <th>New Stock</th>
+                                    <th>Reference</th>
+                                    <th>User</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for txn in history %}
+                                <tr>
+                                    <td>{{ txn.created_at|format_datetime('%Y-%m-%d %H:%M') if txn.created_at else '-' }}</td>
+                                    <td>
+                                        {% if txn.transaction_type == 'sale' %}
+                                        <span class="badge bg-danger">Sale</span>
+                                        {% elif txn.transaction_type == 'purchase' or txn.transaction_type == 'restock' %}
+                                        <span class="badge bg-success">{{ txn.transaction_type|title }}</span>
+                                        {% elif txn.transaction_type == 'return' %}
+                                        <span class="badge bg-info">Return</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ txn.transaction_type|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if txn.quantity < 0 %}
+                                        <span class="text-danger">{{ txn.quantity }}</span>
+                                        {% else %}
+                                        <span class="text-success">+{{ txn.quantity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ txn.previous_stock }}</td>
+                                    <td><strong>{{ txn.new_stock }}</strong></td>
+                                    <td>
+                                        {% if txn.reference_type %}
+                                        {{ txn.reference_type }} #{{ txn.reference_id }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ txn.username or 'System' }}</td>
+                                    <td><small>{{ txn.notes or '-' }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No stock movement history available.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

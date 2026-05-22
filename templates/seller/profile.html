@@ -1,0 +1,137 @@
+{% extends "seller/seller_base.html" %}
+
+{% block title %}My Profile - Seller{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    .profile-page {
+        padding: 10px 0 40px;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 18px 40px rgba(78, 52, 46, 0.15);
+        overflow: hidden;
+        background: var(--white);
+    }
+
+    .profile-card .card-header {
+        background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+        color: var(--white);
+        padding: 24px;
+    }
+
+    .profile-card .card-body {
+        padding: 32px;
+        background: #fffdf9;
+    }
+
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .profile-card label {
+        font-weight: 600;
+        color: var(--brown-dark);
+    }
+
+    .profile-card .form-control {
+        border-radius: 12px;
+        border: 1px solid rgba(78, 52, 46, 0.15);
+        padding: 0.65rem 1rem;
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 576px) {
+        .profile-card .card-body {
+            padding: 20px;
+        }
+        .profile-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block seller_content %}
+<div class="profile-page">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="profile-card">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        {% if user.profile_image %}
+                            <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profile" class="profile-avatar">
+                        {% else %}
+                            <div class="profile-avatar d-flex align-items-center justify-content-center bg-light text-dark">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h4>
+                            <div class="opacity-75">{{ user.email }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-light">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ csrf_token() }}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" id="first_name" name="first_name" class="form-control" value="{{ user.first_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" id="last_name" name="last_name" class="form-control" value="{{ user.last_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" class="form-control" value="{{ user.phone or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" id="address" name="address" class="form-control" value="{{ user.address or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" id="city" name="city" class="form-control" value="{{ user.city or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="province" class="form-label">Province</label>
+                                <input type="text" id="province" name="province" class="form-control" value="{{ user.province or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="postal_code" class="form-label">Postal Code</label>
+                                <input type="text" id="postal_code" name="postal_code" class="form-control" value="{{ user.postal_code or '' }}">
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

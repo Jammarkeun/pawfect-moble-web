@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Pawfect Finds{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    body {
+        background-color: var(--beige-bg);
+        color: var(--brown-dark);
+    }
+    .profile-wrapper {
+        padding: 40px 0 60px;
+        min-height: calc(100vh - 120px);
+    }
+    .profile-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 18px 40px rgba(78, 52, 46, 0.1);
+        overflow: hidden;
+    }
+    .profile-card .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: #fff;
+        padding: 24px;
+    }
+    .profile-card .card-body {
+        padding: 30px;
+        background-color: #fffdf9;
+    }
+    .profile-card label {
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+    @media (max-width: 576px) {
+        .profile-card .card-body {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container profile-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9">
+            <div class="card profile-card">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        {% if user.profile_image %}
+                            <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profile" class="profile-avatar">
+                        {% else %}
+                            <div class="profile-avatar d-flex align-items-center justify-content-center bg-light text-dark">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h4>
+                            <div class="small opacity-75">{{ user.email }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-light">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label" for="first_name">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="last_name">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name or '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="phone">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="address">Address</label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ user.address or '' }}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="city">City</label>
+                                <input type="text" class="form-control" id="city" name="city" value="{{ user.city or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="province">Province</label>
+                                <input type="text" class="form-control" id="province" name="province" value="{{ user.province or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="postal_code">Postal Code</label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code" value="{{ user.postal_code or '' }}">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{{ url_for('seller.dashboard') if session.get('user_role') == 'seller' else url_for('public.landing') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

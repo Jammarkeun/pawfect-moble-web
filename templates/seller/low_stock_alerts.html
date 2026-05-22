@@ -1,0 +1,96 @@
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Low Stock Alerts{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2>⚠️ Low Stock Alerts</h2>
+            <a href="{{ url_for('seller.inventory') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if alerts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Alert Sent</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in alerts %}
+                                <tr>
+                                    <td>{{ alert.product_name }}</td>
+                                    <td><span class="badge bg-warning">{{ alert.current_stock }}</span></td>
+                                    <td>{{ alert.threshold_quantity }}</td>
+                                    <td>
+                                        {% if alert.alert_sent %}
+                                        <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alert.created_at|format_datetime('%Y-%m-%d %H:%M') if alert.created_at else '-' }}</td>
+                                    <td>
+                                        {% if not alert.acknowledged %}
+                                        <button class="btn btn-xs btn-primary acknowledge-alert" data-alert-id="{{ alert.id }}">
+                                            Acknowledge
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">Acknowledged</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> No low stock alerts at this time.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.acknowledge-alert').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const alertId = this.dataset.alertId;
+        fetch(`/seller/inventory/alert/${alertId}/acknowledge`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token_value }}'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('Alert acknowledged');
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+

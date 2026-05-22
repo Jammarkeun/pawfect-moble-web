@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/settings",
+    "files.associations": {
+        "*.html": "jinja-html"
+    },
+    "emmet.includeLanguages": {
+        "jinja-html": "html"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "javascript.validate.enable": false,
+    "html.validate.scripts": false,
+    "css.validate": false
+}

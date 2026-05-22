@@ -1,0 +1,677 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/dashboard-unified.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+/* Seller-specific overrides for unified dashboard */
+:root {
+    --brown-dark: #4E342E;
+    --brown-primary: #6D4C41;
+    --brown-light: #D7CCC8;
+    --tan: #EBD5B3;
+    --white: #FFFFFF;
+    --beige-bg: #FAF3E0;
+    --accent-brown: #8B4513;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: var(--beige-bg);
+    color: #2d1f1b;
+}
+
+/* FORCE SIDEBAR VISIBILITY */
+.sidebar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 56px !important;
+    width: 280px !important;
+    height: calc(100vh - 56px) !important;
+    z-index: 1060 !important;
+    background: linear-gradient(180deg, var(--brown-primary), var(--brown-dark)) !important;
+    color: white !important;
+    padding: 30px 20px !important;
+    overflow-y: auto !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Sidebar header styling */
+.sidebar .sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .sidebar-header h3 {
+    color: white !important;
+    font-size: 1.5rem;
+    margin: 10px 0 5px 0;
+    font-weight: 600;
+}
+
+.sidebar .sidebar-header small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+/* Sidebar navigation */
+.sidebar .sidebar-nav {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.sidebar .sidebar-nav li {
+    margin-bottom: 5px !important;
+}
+
+.sidebar .sidebar-nav a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+}
+
+.sidebar .sidebar-nav a:hover,
+.sidebar .sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transform: translateX(5px) !important;
+}
+
+.sidebar .sidebar-nav i {
+    margin-right: 12px !important;
+    width: 20px !important;
+    text-align: center !important;
+    font-size: 1rem !important;
+}
+
+/* Collapsed sidebar (icons only) */
+.sidebar.collapsed {
+    width: 80px !important;
+    padding: 30px 12px !important;
+}
+
+.sidebar.collapsed .sidebar-header h3,
+.sidebar.collapsed .sidebar-header small {
+    display: none !important;
+}
+
+.sidebar.collapsed .nav-category {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-nav a {
+    justify-content: center !important;
+}
+
+.sidebar.collapsed .sidebar-nav a span {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-nav i {
+    margin-right: 0 !important;
+}
+
+.sidebar .nav-category {
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    margin: 20px 16px 10px 16px !important;
+    padding-bottom: 8px !important;
+    display: block !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Scrollbar styling for sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.seller-info-bar {
+    position: fixed;
+    top: 56px;
+    left: 280px;
+    right: 0;
+    background: linear-gradient(135deg, #ffffff, #FDF8F2);
+    border-bottom: 2px solid rgba(78, 52, 46, 0.12);
+    padding: 12px 0;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: left 0.3s ease, width 0.3s ease;
+}
+
+.seller-info-bar .container-fluid {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.seller-back-btn {
+    position: fixed;
+    left: 16px;
+    top: 68px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1090;
+    padding: 0;
+}
+
+.seller-back-btn i {
+    font-size: 1.1rem;
+}
+
+@media (max-width: 992px) {
+    .seller-back-btn {
+        top: 76px;
+    }
+}
+
+.seller-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(139, 69, 19, 0.3);
+}
+
+.seller-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--accent-brown);
+    font-size: 0.9rem;
+    margin-top: 30px;
+    border-top: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+/* Main content positioning */
+.main-content {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    padding-top: 110px !important;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+}
+
+.seller-info-bar.expanded {
+    left: 80px !important;
+}
+
+/* Sidebar toggle button that mirrors admin experience */
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-brown);
+    font-size: 1.4rem;
+    padding: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1100;
+}
+
+.sidebar-toggle-btn:hover {
+    color: var(--brown-dark);
+    background: rgba(78, 52, 46, 0.08);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+        width: 260px !important;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0) !important;
+        z-index: 1200 !important;
+    }
+    
+    .seller-info-bar {
+        left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .seller-info-bar.expanded {
+        left: 0 !important;
+    }
+    
+    .seller-info-bar .container-fluid {
+        padding-left: 15px;
+    }
+    
+    .main-content,
+    .main-content.expanded {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 110px !important;
+    }
+}
+
+/* Badge pulse animation for real-time alerts */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    50% {
+        opacity: 0.9;
+        box-shadow: 0 0 0 5px rgba(220, 53, 69, 0);
+    }
+}
+
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge.pulse,
+.badge[style*="animation: pulse"] {
+    animation: pulse 2s infinite;
+}
+</style>
+
+<div class="dashboard-layout">
+    <button type="button" class="btn btn-primary seller-back-btn d-none" onclick="goBack();" title="Go Back">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sellerSidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-paw fa-2x mb-2" style="color: rgba(255, 255, 255, 0.9);"></i>
+            <h3>Pawfect Finds</h3>
+            <small>Seller Dashboard</small>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <span class="nav-category">MAIN</span>
+            <li>
+                <a href="{{ url_for('seller.dashboard') }}" class="{{ 'active' if request.endpoint == 'seller.dashboard' }}">
+                    <i class="fas fa-tachometer-alt"></i> <span>Seller Dashboard</span>
+                </a>
+            </li>
+            
+            <span class="nav-category">PRODUCTS</span>
+            <li>
+                <a href="{{ url_for('seller.products') }}" class="{{ 'active' if request.endpoint == 'seller.products' }}">
+                    <i class="fas fa-box"></i> <span>My Products</span>
+                </a>
+            </li>
+            
+            <span class="nav-category">INVENTORY</span>
+            <li>
+                <a href="/seller/inventory/alerts" class="position-relative">
+                    <i class="fas fa-exclamation-triangle"></i> <span>Low Stock Alerts</span>
+                    <span id="low-stock-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                        0
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/seller/inventory/valuation">
+                    <i class="fas fa-dollar-sign"></i> <span>Valuation Report</span>
+                </a>
+            </li>
+            <li>
+                <a href="/seller/inventory/reorder-suggestions">
+                    <i class="fas fa-sync-alt"></i> <span>Reorder Suggestions</span>
+                </a>
+            </li>
+            
+            <span class="nav-category">ORDERS</span>
+            <li>
+                <a href="{{ url_for('seller.orders') }}" class="{{ 'active' if request.endpoint == 'seller.orders' }} position-relative" id="orders-link">
+                    <i class="fas fa-shopping-cart"></i> <span>Orders</span>
+                    <span id="orders-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: {% if pending_orders and pending_orders > 0 %}inline-block{% else %}none{% endif %};">
+                        {{ pending_orders|default(0) }}
+                    </span>
+                </a>
+            </li>
+            
+            <span class="nav-category">MESSAGING</span>
+            <li>
+                <a href="{{ url_for('chat.my_rooms') }}" class="{{ 'active' if request.endpoint == 'chat.my_rooms' }} position-relative" id="messages-link">
+                    <i class="fas fa-comments"></i> <span>Messages</span>
+                    <span id="messages-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info" style="display: none;">
+                        0
+                    </span>
+                </a>
+            </li>
+            
+            <span class="nav-category">ANALYTICS</span>
+            <li>
+                <a href="{{ url_for('seller.analytics') }}" class="{{ 'active' if request.endpoint == 'seller.analytics' }}">
+                    <i class="fas fa-chart-line"></i> <span>Analytics</span>
+                </a>
+            </li>
+               
+            <span class="nav-category">ACCOUNT</span>
+            <li>
+                <a href="{{ url_for('auth.profile') }}">
+                    <i class="fas fa-user"></i> <span>Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </li>
+        </nav>
+    </aside>
+
+    <!-- Seller Info Bar (Fixed below navbar) -->
+    <div class="seller-info-bar" id="sellerInfoBar">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="seller-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                            <small class="text-muted">{{ current_user.email }}</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="sellerMainContent">
+        <div class="container-fluid">
+            <!-- Page Content -->
+            {% block seller_content %}{% endblock %}
+            
+        </div>
+    </main>
+</div>
+
+<!-- JavaScript for sidebar toggle -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sellerSidebar');
+    const mainContent = document.getElementById('sellerMainContent');
+    const sellerInfoBar = document.getElementById('sellerInfoBar');
+    let toggleButton = document.getElementById('sidebarToggleBtn');
+
+    // Inject hamburger button into navbar (mirrors admin experience)
+    const navbarContainer = document.querySelector('.navbar .container');
+    if (!toggleButton && navbarContainer) {
+        toggleButton = document.createElement('button');
+        toggleButton.id = 'sidebarToggleBtn';
+        toggleButton.className = 'sidebar-toggle-btn';
+        toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+        toggleButton.type = 'button';
+        navbarContainer.insertBefore(toggleButton, navbarContainer.firstChild);
+    }
+
+    function updateToggleIcon(collapsed) {
+        if (!toggleButton) return;
+        const icon = toggleButton.querySelector('i');
+        if (icon) {
+            icon.style.transform = collapsed ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+    }
+
+    function applyCollapsedState(collapsed) {
+        if (!sidebar) return;
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+            if (mainContent) {
+                mainContent.classList.add('expanded');
+            }
+            if (sellerInfoBar) {
+                sellerInfoBar.classList.add('expanded');
+            }
+        } else {
+            sidebar.classList.remove('collapsed');
+            if (mainContent) {
+                mainContent.classList.remove('expanded');
+            }
+            if (sellerInfoBar) {
+                sellerInfoBar.classList.remove('expanded');
+            }
+        }
+        updateToggleIcon(collapsed);
+    }
+
+    const savedCollapsed = localStorage.getItem('sellerSidebarCollapsed') === 'true';
+    if (window.innerWidth >= 992) {
+        applyCollapsedState(savedCollapsed);
+    } else {
+        updateToggleIcon(false);
+    }
+
+    if (toggleButton && sidebar) {
+        toggleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.innerWidth < 992) {
+                sidebar.classList.toggle('show');
+                document.body.classList.toggle('sidebar-open', sidebar.classList.contains('show'));
+            } else {
+                const shouldCollapse = !sidebar.classList.contains('collapsed');
+                applyCollapsedState(shouldCollapse);
+                localStorage.setItem('sellerSidebarCollapsed', shouldCollapse);
+
+                updateToggleIcon(shouldCollapse);
+            }
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!sidebar || window.innerWidth >= 992) return;
+        const isClickInside = sidebar.contains(event.target) || (toggleButton && toggleButton.contains(event.target));
+        if (!isClickInside) {
+            sidebar.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+
+    function updateSellerBackButtonVisibility() {
+        const backBtn = document.querySelector('.seller-back-btn');
+        if (!backBtn) return;
+        const hasHistory = window.history.length > 1;
+        if (hasHistory) {
+            backBtn.classList.remove('d-none');
+        } else {
+            backBtn.classList.add('d-none');
+        }
+    }
+
+    updateSellerBackButtonVisibility();
+    window.addEventListener('pageshow', updateSellerBackButtonVisibility);
+
+    window.addEventListener('resize', function() {
+        if (!sidebar) return;
+        if (window.innerWidth < 992) {
+            sidebar.classList.remove('collapsed');
+            if (mainContent) {
+                mainContent.classList.remove('expanded');
+            }
+            if (sellerInfoBar) {
+                sellerInfoBar.classList.remove('expanded');
+            }
+            updateToggleIcon(false);
+        } else {
+            const collapsed = localStorage.getItem('sellerSidebarCollapsed') === 'true';
+            applyCollapsedState(collapsed);
+            sidebar.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+
+    // Set current year in footer (if element exists)
+    const currentYearEl = document.getElementById('current-year');
+    if (currentYearEl) {
+        currentYearEl.textContent = new Date().getFullYear();
+    }
+    
+    // Real-time low stock alerts
+    function checkLowStockAlerts() {
+        fetch('/seller/inventory/alerts/count')
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('low-stock-badge');
+                if (data.success && data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                    badge.style.animation = 'pulse 2s infinite';
+                    
+                    // Show browser notification if supported
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        if (data.new_alerts && data.new_alerts.length > 0) {
+                            new Notification('⚠️ Low Stock Alert', {
+                                body: `${data.new_alerts.length} product(s) are running low on stock!`,
+                                icon: '/static/favicon.ico',
+                                tag: 'low-stock'
+                            });
+                        }
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(err => console.error('Failed to check low stock alerts:', err));
+    }
+    
+    // Real-time pending orders count
+    function checkPendingOrders() {
+        fetch('/seller/orders/count')
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                }
+                return r.json();
+            })
+            .then(data => {
+                console.log('Orders count response:', data);
+                const badge = document.getElementById('orders-badge');
+                if (badge) {
+                    const oldCount = parseInt(badge.textContent) || 0;
+                    const newCount = data.success ? data.count : 0;
+                    
+                    if (newCount > 0) {
+                        badge.textContent = newCount;
+                        badge.style.display = 'inline-block';
+                        badge.style.animation = 'pulse 2s infinite';
+                        
+                        // Only trigger refresh if count changed
+                        if (newCount !== oldCount && typeof refreshOrdersList === 'function') {
+                            console.log('New orders detected! Refreshing list...');
+                            refreshOrdersList();
+                        }
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } else {
+                    console.error('orders-badge element not found');
+                }
+            })
+            .catch(err => {
+                console.error('Failed to check pending orders:', err);
+            });
+    }
+    
+    // Check on page load
+    checkLowStockAlerts();
+    checkPendingOrders();
+    checkUnreadMessages();
+    
+    // Check every 10 seconds for pending orders (faster), 30 seconds for stock alerts, 15 seconds for messages
+    setInterval(checkLowStockAlerts, 30000);
+    setInterval(checkPendingOrders, 10000);
+    setInterval(checkUnreadMessages, 15000);
+    
+    // WebSocket real-time updates
+    if (window.socket) {
+        window.socket.on('order_status_updated', function(data) {
+            checkPendingOrders();
+        });
+        
+        window.socket.on('stock_updated', function(data) {
+            checkLowStockAlerts();
+        });
+        
+        window.socket.on('new_message', function(data) {
+            checkUnreadMessages();
+        });
+        
+        window.socket.on('messages_read', function(data) {
+            checkUnreadMessages();
+        });
+    }
+    
+    function checkUnreadMessages() {
+        fetch('/chat/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('messages-badge');
+                if (badge) {
+                    const count = data.unread_count || 0;
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-block';
+                        badge.style.animation = 'pulse 2s infinite';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(err => console.error('Failed to check unread messages:', err));
+    }
+});
+</script>
+
+{% endblock %}

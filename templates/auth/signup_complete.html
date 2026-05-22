@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Signup Complete - Pawfect Finds{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    {% if account_type == 'seller' %}
+                        <h4 class="mb-3">Seller Application Submitted</h4>
+                        <p class="mb-3">Your account has been created and your <strong>seller application</strong> has been submitted successfully.</p>
+                        <p class="text-muted mb-4">Our admin team will review your details and business documents. You will receive a notification once your application is approved or if we need more information.</p>
+                    {% elif account_type == 'rider' %}
+                        <h4 class="mb-3">Rider Application Submitted</h4>
+                        <p class="mb-3">Your account has been created and your <strong>rider application</strong> has been submitted successfully.</p>
+                        <p class="text-muted mb-4">Our admin team will review your details and uploaded documents. You will receive a notification once your application is approved or if further steps are required.</p>
+                    {% else %}
+                        <h4 class="mb-3">Account Created</h4>
+                        <p class="mb-3">Your account has been created successfully.</p>
+                        <p class="text-muted mb-4">You can now log in to start shopping for your pet's needs.</p>
+                    {% endif %}
+
+                    <a href="{{ url_for('auth.login', force='1') }}" class="btn btn-primary btn-lg mt-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Go to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

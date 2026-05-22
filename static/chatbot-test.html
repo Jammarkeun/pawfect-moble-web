@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawfectBot - Chatbot Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/chatbot.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 100%);
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .demo-title {
+            color: #8d6e63;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .highlight {
+            background: #fff3e0;
+            padding: 1rem;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .badge-custom {
+            background: #ff9800;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="demo-card">
+            <h1 class="demo-title">🤖 PawfectBot - Floating FAQ Chatbot</h1>
+            <p class="lead">A lightweight, self-contained chatbot widget for Pawfect Finds</p>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">✨ Features</h2>
+            <ul class="feature-list">
+                <li>Floating chat button (bottom-right corner)</li>
+                <li>Smooth open/close animations</li>
+                <li>5 pre-configured FAQ questions with instant responses</li>
+                <li>Beautiful message bubbles (user green, bot gray)</li>
+                <li>Responsive design for all devices</li>
+                <li>Zero external dependencies (pure vanilla JS)</li>
+                <li>No backend required</li>
+                <li>Instant deployment</li>
+            </ul>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">📝 Available Questions</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>📦 How to order?</strong><br>
+                    <em>To order, just browse items, add to cart, then proceed to checkout!</em></p>
+                    
+                    <p><strong>🚚 Delivery time?</strong><br>
+                    <em>Delivery takes 2–3 days in Metro Manila and 3–5 days provincial.</em></p>
+                    
+                    <p><strong>💳 Payment methods?</strong><br>
+                    <em>We accept COD, Credit Card via Stripe.</em></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>🔄 Return & Refund policy</strong><br>
+                    <em>You can request a refund/return within 7 days.</em></p>
+                    
+                    <p><strong>📞 Contact support</strong><br>
+                    <em>You can reach us at support@pawfectfinds.com</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">🎨 Design</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Color Scheme</h5>
+                    <p>
+                        <span class="badge" style="background: #8d6e63; color: white;">Floating Button</span>
+                        <span class="badge badge-custom">Orange Header</span>
+                        <span class="badge" style="background: #8d6e63; color: white;">User Messages</span>
+                        <span class="badge" style="background: #e0e0e0; color: #333;">Bot Messages</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Dimensions</h5>
+                    <ul>
+                        <li>Button: 60px diameter</li>
+                        <li>Window: 320px × 500px</li>
+                        <li>Mobile: 280px × 450px</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">⚙️ How to Use</h2>
+            <ol>
+                <li><strong>CSS Import</strong> - Added to &lt;head&gt; in base.html</li>
+                <li><strong>JavaScript Import</strong> - Added before &lt;/html&gt; in base.html</li>
+                <li><strong>Auto-initialization</strong> - Chatbot loads automatically on all pages</li>
+                <li><strong>No configuration needed</strong> - Works out of the box!</li>
+            </ol>
+        </div>
+
+        <div class="demo-card highlight">
+            <h3 style="color: #ff9800; margin: 0;">💡 Pro Tip</h3>
+            <p style="margin: 0.5rem 0 0 0;">Try clicking the chat button in the bottom-right corner of this page to see the chatbot in action!</p>
+        </div>
+
+        <div class="demo-card">
+            <h2 class="demo-title">📁 Files Included</h2>
+            <ul>
+                <li><code>/static/js/chatbot.js</code> - Core chatbot logic</li>
+                <li><code>/static/css/chatbot.css</code> - Complete styling</li>
+                <li><code>templates/base.html</code> - Updated with chatbot references</li>
+                <li><code>CHATBOT_IMPLEMENTATION.md</code> - Comprehensive documentation</li>
+            </ul>
+        </div>
+
+        <div class="demo-card" style="background: #fff3e0; border-left: 4px solid #ff9800;">
+            <p style="margin: 0; color: #ff6f00;">
+                ✅ <strong>Status:</strong> Ready for production use
+            </p>
+        </div>
+    </div>
+
+    <!-- Include the chatbot -->
+    <script src="../static/js/chatbot.js"></script>
+</body>
+</html>

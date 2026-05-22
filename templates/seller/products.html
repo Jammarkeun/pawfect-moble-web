@@ -1,0 +1,1480 @@
+{% extends "seller/seller_base.html" %}
+
+{% block title %}Manage Products - Seller Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Fix for modal backdrop */
+.modal-backdrop {
+    z-index: 1040 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+.modal {
+    z-index: 1060 !important;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+}
+
+/* Ensure modal is centered vertically */
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+
+/* Fix for modal content */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Make sure form controls look good */
+.form-control, .form-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+
+/* Style the close button */
+.btn-close {
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    opacity: 0.5;
+    padding: 0.5rem;
+    margin: -0.5rem -0.5rem -0.5rem auto;
+}
+
+.btn-close:hover {
+    opacity: 0.75;
+}
+</style>
+{% endblock %}
+
+{% block seller_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-boxes"></i> Manage Products</h2>
+                    <p class="text-muted">Add, edit, and manage your product catalog</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('seller.products') }}" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Status</label>
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Status</option>
+                                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
+                                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                <option value="out_of_stock" {% if selected_status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Category</label>
+                            <select name="category" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if selected_category == category.id|string %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            {% if selected_status or selected_category %}
+                                <a href="{{ url_for('seller.products') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if products %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{ product.image_url|image_url }}"
+                                                         class="me-3 rounded" style="width: 50px; height: 40px; object-fit: cover;"
+                                                         alt="{{ product.name }}" loading="lazy" decoding="async">
+                                                    <div>
+                                                        <h6 class="mb-0">{{ product.name }}</h6>
+                                                        <small class="text-muted">{{ product.description[:50] }}{% if product.description|length > 50 %}...{% endif %}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ product.category_name }}</td>
+                                            <td>
+                                                {{ product.price|apply_discount|php }}
+                                                <small class="text-muted text-decoration-line-through">{{ product.price|php }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'danger' if product.stock_quantity == 0 else 'warning' if product.stock_quantity <= 5 else 'success' }}">
+                                                    {{ product.stock_quantity }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if product.status == 'active' else 'danger' if product.status == 'out_of_stock' else 'secondary' }}">
+                                                    {{ product.status.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>{{ product.created_at|format_datetime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm edit-product-btn"
+                                                            data-product-id="{{ product.id }}"
+                                                            data-product-name="{{ product.name|e }}"
+                                                            data-product-category="{{ product.category_id }}"
+                                                            data-product-desc="{{ (product.description or '')|e }}"
+                                                            data-product-price="{{ product.price }}"
+                                                            data-product-stock="{{ product.stock_quantity }}"
+                                                            data-product-image="{{ (product.image_url or '')|e }}"
+                                                            data-product-status="{{ product.status|e }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <form method="POST" action="{{ url_for('seller.delete_product', product_id=product.id) }}" class="d-inline"
+                                                          onsubmit="return confirm('Are you sure you want to delete this product?')">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Products Yet</h4>
+                            <p class="text-muted mb-4">Start by adding your first product to begin selling on Pawfect Finds.</p>
+                            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="fas fa-plus"></i> Add Your First Product
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addProductFormModal" method="POST" action="{{ url_for('seller.add_product') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                <input type="hidden" id="imageOrder" name="image_order" value="">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category_id" class="form-label">Category *</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Describe your product..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price (₱) *</label>
+                            <input type="number" class="form-control" id="price" name="price" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_quantity" class="form-label">Stock Quantity *</label>
+                            <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" 
+                                   min="0" required>
+                        </div>
+                    </div>
+
+                    <!-- Product Variations Section -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="has_variations" name="has_variations">
+                                <label class="form-check-label fw-bold" for="has_variations">
+                                    <i class="fas fa-layer-group"></i> This product has variations (Optional)
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2">Check this if your product comes in different sizes, colors, or other options.</small>
+                            
+                            <div id="variationsContainer" style="display: none;" class="mt-3">
+                                <hr>
+                                <h6 class="mb-3"><i class="fas fa-cogs"></i> Product Variations</h6>
+                                
+                                <div id="variationsList" class="mb-3">
+                                    <!-- Variation items will be added here dynamically -->
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-success" id="addVariationBtn">
+                                    <i class="fas fa-plus"></i> Add Variation
+                                </button>
+
+                                <div class="alert alert-info small mt-3">
+                                    <i class="fas fa-info-circle"></i> Add each variation with a name (e.g., "Red - S", "Detick 1cc+Syringe") and upload an image. Variations will be shown to customers when they browse your product.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Product Images * (Minimum 3 required)</label>
+                        <input type="file" class="form-control" id="images" name="images"
+                               accept="image/*" multiple required>
+                        <small class="text-muted">Upload at least 3 product images (JPG, PNG, JPEG). Users can swipe through them. You can reorder them below.</small>
+                        <div id="imagePreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editProductForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                <input type="hidden" id="editImageOrder" name="image_order" value="">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_name" class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_category_id" class="form-label">Category *</label>
+                            <select class="form-select" id="edit_category_id" name="category_id" required>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_price" class="form-label">Price (₱) *</label>
+                            <input type="number" class="form-control" id="edit_price" name="price" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_stock_quantity" class="form-label">Stock Quantity *</label>
+                            <input type="number" class="form-control" id="edit_stock_quantity" name="stock_quantity" 
+                                   min="0" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Variations Section (Edit) -->
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="edit_has_variations" name="has_variations">
+                                <label class="form-check-label fw-bold" for="edit_has_variations">
+                                    <i class="fas fa-layer-group"></i> This product has variations (Optional)
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2">Check this if your product comes in different sizes, colors, or other options.</small>
+                            
+                            <div id="editVariationsContainer" style="display: none;" class="mt-3">
+                                <hr>
+                                <h6 class="mb-3"><i class="fas fa-cogs"></i> Product Variations</h6>
+                                
+                                <div id="editVariationsList" class="mb-3">
+                                    <!-- Existing and new variation items will be added here -->
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-success" id="editAddVariationBtn">
+                                    <i class="fas fa-plus"></i> Add Variation
+                                </button>
+
+                                <div class="alert alert-info small mt-3">
+                                    <i class="fas fa-info-circle"></i> Add each variation with a name (e.g., "Red - S", "Detick 1cc+Syringe") and upload an image. Variations will be shown to customers when they browse your product.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-images"></i> Product Images</label>
+                        
+                        <!-- Current/Existing Images Section -->
+                        <div id="existingImagesSection" class="mb-3">
+                            <h6 class="mt-3 mb-2">Current Images (Drag to reorder)</h6>
+                            <div id="existingImagesContainer" class="border rounded p-3" style="background-color: #f8f9fa; min-height: 120px;">
+                                <p class="text-muted mb-0">Loading existing images...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- New Images Upload Section -->
+                        <div id="newImagesSection">
+                            <h6 class="mt-3 mb-2">Upload New Images (Optional)</h6>
+                            <p class="small text-muted mb-2">Upload at least 3 new images to replace all existing ones, or leave empty to keep current images.</p>
+                            <div class="input-group mb-2">
+                                <input type="file" class="form-control" id="edit_images" name="images"
+                                       accept="image/*" multiple>
+                                <button type="button" class="btn btn-outline-danger" id="clearImagesBtn" title="Clear selected images">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                            <div id="editImagePreview" class="border rounded p-3" style="background-color: #f8f9fa; min-height: 120px;">
+                                <p class="text-muted mb-0">No new images selected</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_status" class="form-label">Status</label>
+                            <select class="form-select" id="edit_status" name="status">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="out_of_stock">Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger me-auto" id="deleteProductBtn">
+                        <i class="fas fa-trash"></i> Delete Product
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div> <!-- Close modal-dialog -->
+</div> <!-- Close editProductModal -->
+
+{% block extra_js %}
+<script>
+// Wait for everything to be loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded');
+    
+    // Store original file order
+    let fileOrderMap = {};
+    let selectedFiles = {};
+    
+    // Image preview for add product
+    const imageInput = document.getElementById('images');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            imagePreview.innerHTML = '';
+            const files = e.target.files;
+            selectedFiles = {};
+            fileOrderMap = {};
+            
+            if (files.length < 3) {
+                imagePreview.innerHTML = '<div class="alert alert-warning py-2"><i class="fas fa-exclamation-triangle"></i> Please select at least 3 images</div>';
+            } else {
+                // Create draggable container
+                const container = document.createElement('div');
+                container.style.padding = '10px';
+                container.style.border = '2px dashed #ddd';
+                container.style.borderRadius = '5px';
+                container.style.backgroundColor = '#f8f9fa';
+                container.id = 'imageOrderContainer';
+                
+                const title = document.createElement('p');
+                title.className = 'text-success mb-2 small';
+                title.innerHTML = '<i class="fas fa-check-circle"></i> ' + files.length + ' images selected. Drag to reorder (left to right):';
+                container.appendChild(title);
+                
+                const imagesContainer = document.createElement('div');
+                imagesContainer.id = 'imagesSortable';
+                imagesContainer.style.display = 'flex';
+                imagesContainer.style.flexWrap = 'wrap';
+                imagesContainer.style.gap = '8px';
+                
+                Array.from(files).forEach((file, idx) => {
+                    selectedFiles[idx] = file;
+                    fileOrderMap[idx] = idx;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageWrapper = document.createElement('div');
+                        imageWrapper.className = 'image-sort-item';
+                        imageWrapper.draggable = true;
+                        imageWrapper.dataset.originalIndex = idx;
+                        imageWrapper.dataset.currentOrder = idx;
+                        imageWrapper.style.position = 'relative';
+                        imageWrapper.style.display = 'inline-block';
+                        imageWrapper.style.cursor = 'grab';
+                        imageWrapper.style.transition = 'transform 0.2s ease';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '5px';
+                        img.style.border = idx === 0 ? '3px solid #28a745' : '1px solid #ddd';
+                        img.style.userSelect = 'none';
+                        img.style.pointerEvents = 'none';
+                        
+                        const orderBadge = document.createElement('div');
+                        orderBadge.className = 'badge bg-dark';
+                        orderBadge.style.position = 'absolute';
+                        orderBadge.style.bottom = '5px';
+                        orderBadge.style.left = '5px';
+                        orderBadge.textContent = (idx + 1);
+                        
+                        const label = document.createElement('div');
+                        label.style.position = 'absolute';
+                        label.style.top = '0';
+                        label.style.right = '0';
+                        label.style.backgroundColor = idx === 0 ? '#28a745' : '#6c757d';
+                        label.style.color = 'white';
+                        label.style.padding = '2px 5px';
+                        label.style.fontSize = '10px';
+                        label.style.borderRadius = '0 5px 0 5px';
+                        label.textContent = idx === 0 ? 'Primary' : `#${idx + 1}`;
+                        
+                        imageWrapper.appendChild(img);
+                        imageWrapper.appendChild(orderBadge);
+                        imageWrapper.appendChild(label);
+                        imagesContainer.appendChild(imageWrapper);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                
+                container.appendChild(imagesContainer);
+                imagePreview.appendChild(container);
+                
+                // Add drag handlers
+                setupImageDragHandlers();
+            }
+        });
+    }
+    
+    function setupImageDragHandlers() {
+        let draggedElement = null;
+        
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.closest('.image-sort-item')) {
+                draggedElement = e.target.closest('.image-sort-item');
+                draggedElement.style.opacity = '0.5';
+                draggedElement.style.cursor = 'grabbing';
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+        
+        document.addEventListener('dragend', function(e) {
+            if (draggedElement) {
+                draggedElement.style.opacity = '1';
+                draggedElement.style.cursor = 'grab';
+                draggedElement = null;
+            }
+        });
+        
+        document.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+        
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedElement && e.target.closest('.image-sort-item')) {
+                const targetElement = e.target.closest('.image-sort-item');
+                if (draggedElement !== targetElement) {
+                    const container = document.getElementById('imagesSortable');
+                    
+                    // Get positions
+                    const allItems = Array.from(container.querySelectorAll('.image-sort-item'));
+                    const draggedIndex = allItems.indexOf(draggedElement);
+                    const targetIndex = allItems.indexOf(targetElement);
+                    
+                    // Swap elements
+                    if (draggedIndex < targetIndex) {
+                        targetElement.parentNode.insertBefore(draggedElement, targetElement.nextSibling);
+                    } else {
+                        targetElement.parentNode.insertBefore(draggedElement, targetElement);
+                    }
+                    
+                    // Update order badges
+                    updateImageOrder();
+                }
+            }
+        });
+    }
+    
+    function updateImageOrder() {
+        const items = document.querySelectorAll('.image-sort-item');
+        items.forEach((item, index) => {
+            const badge = item.querySelector('.badge');
+            if (badge) badge.textContent = (index + 1);
+            item.dataset.currentOrder = index;
+            
+            // Update border and label
+            const img = item.querySelector('img');
+            const label = item.querySelector('[style*="position: absolute"][style*="top: 0"]');
+            
+            if (index === 0) {
+                img.style.border = '3px solid #28a745';
+                if (label) {
+                    label.style.backgroundColor = '#28a745';
+                    label.textContent = 'Primary';
+                }
+            } else {
+                img.style.border = '1px solid #ddd';
+                if (label) {
+                    label.style.backgroundColor = '#6c757d';
+                    label.textContent = `#${index + 1}`;
+                }
+            }
+        });
+        
+        // Update the file order in the map
+        const items_array = Array.from(document.querySelectorAll('.image-sort-item'));
+        const newFileOrder = {};
+        items_array.forEach((item, newIndex) => {
+            const originalIndex = parseInt(item.dataset.originalIndex);
+            newFileOrder[newIndex] = originalIndex;
+        });
+        fileOrderMap = newFileOrder;
+    }
+    
+    // Store file order for edit product
+    let editFileOrderMap = {};
+    let editSelectedFiles = {};
+    
+    // Image preview for edit product
+    const editImageInput = document.getElementById('edit_images');
+    const editImagePreview = document.getElementById('editImagePreview');
+    const clearImagesBtn = document.getElementById('clearImagesBtn');
+    
+    if (editImageInput) {
+        editImageInput.addEventListener('change', function(e) {
+            editImagePreview.innerHTML = '';
+            const files = e.target.files;
+            editSelectedFiles = {};
+            editFileOrderMap = {};
+            
+            if (files.length === 0) {
+                editImagePreview.innerHTML = '<p class="text-muted mb-0">No images selected</p>';
+            } else if (files.length > 0 && files.length < 3) {
+                editImagePreview.innerHTML = '<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Please select at least 3 images to replace existing ones</div>';
+                Array.from(files).forEach((file, idx) => {
+                    editSelectedFiles[idx] = file;
+                    editFileOrderMap[idx] = idx;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const container = document.createElement('div');
+                        container.style.position = 'relative';
+                        container.style.display = 'inline-block';
+                        container.style.margin = '5px';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '5px';
+                        img.style.border = '1px solid #ddd';
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'btn btn-sm btn-danger';
+                        removeBtn.style.position = 'absolute';
+                        removeBtn.style.top = '0';
+                        removeBtn.style.right = '0';
+                        removeBtn.style.borderRadius = '50%';
+                        removeBtn.style.width = '24px';
+                        removeBtn.style.height = '24px';
+                        removeBtn.style.padding = '0';
+                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        removeBtn.title = 'Remove image';
+                        
+                        container.appendChild(img);
+                        container.appendChild(removeBtn);
+                        editImagePreview.appendChild(container);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else if (files.length >= 3) {
+                // Create draggable container
+                const container = document.createElement('div');
+                container.style.padding = '10px';
+                container.style.border = '2px dashed #ddd';
+                container.style.borderRadius = '5px';
+                container.style.backgroundColor = '#f8f9fa';
+                container.id = 'editImageOrderContainer';
+                
+                const title = document.createElement('p');
+                title.className = 'text-success mb-2 small';
+                title.innerHTML = '<i class="fas fa-check-circle"></i> ' + files.length + ' images selected. Drag to reorder (left to right):';
+                container.appendChild(title);
+                
+                const imagesContainer = document.createElement('div');
+                imagesContainer.id = 'editImagesSortable';
+                imagesContainer.style.display = 'flex';
+                imagesContainer.style.flexWrap = 'wrap';
+                imagesContainer.style.gap = '8px';
+                
+                Array.from(files).forEach((file, idx) => {
+                    editSelectedFiles[idx] = file;
+                    editFileOrderMap[idx] = idx;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageWrapper = document.createElement('div');
+                        imageWrapper.className = 'edit-image-sort-item';
+                        imageWrapper.draggable = true;
+                        imageWrapper.dataset.originalIndex = idx;
+                        imageWrapper.dataset.currentOrder = idx;
+                        imageWrapper.style.position = 'relative';
+                        imageWrapper.style.display = 'inline-block';
+                        imageWrapper.style.cursor = 'grab';
+                        imageWrapper.style.transition = 'transform 0.2s ease';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '5px';
+                        img.style.border = idx === 0 ? '3px solid #28a745' : '1px solid #ddd';
+                        img.style.userSelect = 'none';
+                        img.style.pointerEvents = 'none';
+                        
+                        const orderBadge = document.createElement('div');
+                        orderBadge.className = 'badge bg-dark';
+                        orderBadge.style.position = 'absolute';
+                        orderBadge.style.bottom = '5px';
+                        orderBadge.style.left = '5px';
+                        orderBadge.textContent = (idx + 1);
+                        
+                        const label = document.createElement('div');
+                        label.style.position = 'absolute';
+                        label.style.top = '0';
+                        label.style.right = '0';
+                        label.style.backgroundColor = idx === 0 ? '#28a745' : '#6c757d';
+                        label.style.color = 'white';
+                        label.style.padding = '2px 5px';
+                        label.style.fontSize = '10px';
+                        label.style.borderRadius = '0 5px 0 5px';
+                        label.textContent = idx === 0 ? 'Primary' : `#${idx + 1}`;
+                        
+                        imageWrapper.appendChild(img);
+                        imageWrapper.appendChild(orderBadge);
+                        imageWrapper.appendChild(label);
+                        imagesContainer.appendChild(imageWrapper);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                
+                container.appendChild(imagesContainer);
+                editImagePreview.appendChild(container);
+                
+                // Add drag handlers for edit
+                setupEditImageDragHandlers();
+            }
+        });
+        
+        if (clearImagesBtn) {
+            clearImagesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                editImageInput.value = '';
+                editImagePreview.innerHTML = '<p class="text-muted mb-0">No images selected</p>';
+                editFileOrderMap = {};
+                editSelectedFiles = {};
+            });
+        }
+    }
+    
+    function setupEditImageDragHandlers() {
+        let draggedElement = null;
+        
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.closest('.edit-image-sort-item')) {
+                draggedElement = e.target.closest('.edit-image-sort-item');
+                draggedElement.style.opacity = '0.5';
+                draggedElement.style.cursor = 'grabbing';
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+        
+        document.addEventListener('dragend', function(e) {
+            if (draggedElement) {
+                draggedElement.style.opacity = '1';
+                draggedElement.style.cursor = 'grab';
+                draggedElement = null;
+            }
+        });
+        
+        document.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+        
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedElement && e.target.closest('.edit-image-sort-item')) {
+                const targetElement = e.target.closest('.edit-image-sort-item');
+                if (draggedElement !== targetElement) {
+                    const container = document.getElementById('editImagesSortable');
+                    if (!container) return;
+                    
+                    // Get positions
+                    const allItems = Array.from(container.querySelectorAll('.edit-image-sort-item'));
+                    const draggedIndex = allItems.indexOf(draggedElement);
+                    const targetIndex = allItems.indexOf(targetElement);
+                    
+                    // Swap elements
+                    if (draggedIndex < targetIndex) {
+                        targetElement.parentNode.insertBefore(draggedElement, targetElement.nextSibling);
+                    } else {
+                        targetElement.parentNode.insertBefore(draggedElement, targetElement);
+                    }
+                    
+                    // Update order badges
+                    updateEditImageOrder();
+                }
+            }
+        });
+    }
+    
+    function updateEditImageOrder() {
+        const items = document.querySelectorAll('.edit-image-sort-item');
+        items.forEach((item, index) => {
+            const badge = item.querySelector('.badge');
+            if (badge) badge.textContent = (index + 1);
+            item.dataset.currentOrder = index;
+            
+            // Update border and label
+            const img = item.querySelector('img');
+            const label = item.querySelector('[style*="position: absolute"][style*="top: 0"]');
+            
+            if (index === 0) {
+                img.style.border = '3px solid #28a745';
+                if (label) {
+                    label.style.backgroundColor = '#28a745';
+                    label.textContent = 'Primary';
+                }
+            } else {
+                img.style.border = '1px solid #ddd';
+                if (label) {
+                    label.style.backgroundColor = '#6c757d';
+                    label.textContent = `#${index + 1}`;
+                }
+            }
+        });
+        
+        // Update the file order in the map
+        const items_array = Array.from(document.querySelectorAll('.edit-image-sort-item'));
+        const newFileOrder = {};
+        items_array.forEach((item, newIndex) => {
+            const originalIndex = parseInt(item.dataset.originalIndex);
+            newFileOrder[newIndex] = originalIndex;
+        });
+        editFileOrderMap = newFileOrder;
+    }
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Initialize modals
+    function initializeModals() {
+        // Add Product Modal
+        const addModal = document.getElementById('addProductModal');
+        if (addModal) {
+            // Reset modal state
+            addModal.style.display = 'none';
+            addModal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+            
+            // Initialize new modal instance
+            const modalInstance = new bootstrap.Modal(addModal, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            
+            // Handle modal show/hide events
+            addModal.addEventListener('show.bs.modal', function (event) {
+                console.log('Add Product Modal is about to be shown');
+            });
+            
+            addModal.addEventListener('shown.bs.modal', function (event) {
+                console.log('Add Product Modal is now shown');
+            });
+        }
+        
+        // Edit Product Modal
+        const editModal = document.getElementById('editProductModal');
+        if (editModal) {
+            // Reset modal state
+            editModal.style.display = 'none';
+            editModal.classList.remove('show');
+            
+            // Initialize new modal instance
+            const editModalInstance = new bootstrap.Modal(editModal, {
+                backdrop: 'static',
+                keyboard: false
+            });
+        }
+    }
+    
+    // Initialize modals
+    initializeModals();
+    
+    // Handle edit button clicks
+    document.addEventListener('click', function(e) {
+        const editBtn = e.target.closest('.edit-product-btn');
+        if (editBtn) {
+            e.preventDefault();
+            
+            const form = document.getElementById('editProductForm');
+            if (!form) return;
+            
+            // Get the modal instance
+            const editModal = document.getElementById('editProductModal');
+            if (!editModal) return;
+            
+            // Reset form
+            form.reset();
+            
+            // Set form action
+            const productId = editBtn.dataset.productId;
+            form.action = '{{ url_for("seller.edit_product", product_id=0) }}'.replace('0', productId);
+            
+            // Populate form fields
+            form.querySelector('#edit_name').value = editBtn.dataset.productName || '';
+            form.querySelector('#edit_category_id').value = editBtn.dataset.productCategory || '';
+            form.querySelector('#edit_description').value = editBtn.dataset.productDesc || '';
+            form.querySelector('#edit_price').value = editBtn.dataset.productPrice || '0';
+            form.querySelector('#edit_stock_quantity').value = editBtn.dataset.productStock || '0';
+            form.querySelector('#edit_status').value = editBtn.dataset.productStatus || 'active';
+            
+            // Store product ID for delete functionality
+            form.dataset.productId = productId;
+            
+            // Load existing variations and images
+            loadExistingVariations(productId);
+            loadExistingImages(productId);
+            
+            // Show the modal using the Bootstrap 5 modal instance
+            const modal = bootstrap.Modal.getInstance(editModal) || new bootstrap.Modal(editModal);
+            modal.show();
+            
+            // Force update of form validation
+            if (form.checkValidity) {
+                form.classList.add('was-validated');
+            }
+        }
+    });
+    
+    // Function to load existing variations when editing
+    async function loadExistingVariations(productId) {
+        try {
+            const response = await fetch(`/seller/product/${productId}/variations`);
+            
+            // Check if response is ok before parsing JSON
+            if (!response.ok) {
+                console.warn(`API returned status ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('Failed to parse response as JSON:', parseError);
+                console.error('Response status:', response.status);
+                throw new Error('Invalid JSON response from server');
+            }
+            
+            const editVariationsList = document.getElementById('editVariationsList');
+            const editHasVariationsCheckbox = document.getElementById('edit_has_variations');
+            
+            if (data.success && data.has_variations && data.variants && data.variants.length > 0) {
+                // Check the variations checkbox
+                editHasVariationsCheckbox.checked = true;
+                document.getElementById('editVariationsContainer').style.display = 'block';
+                
+                // Clear existing entries
+                editVariationsList.innerHTML = '';
+                
+                // Add each existing variation
+                data.variants.forEach((variant, idx) => {
+                    const varEntry = createVariationEntry(idx, variant.name, variant.image_url ? `/${variant.image_url}` : null, `existing_${variant.id}`);
+                    editVariationsList.insertAdjacentHTML('beforeend', varEntry);
+                });
+                
+                // Attach event handlers
+                attachVariationEventHandlers();
+            } else {
+                // No variations - uncheck and hide
+                editHasVariationsCheckbox.checked = false;
+                document.getElementById('editVariationsContainer').style.display = 'none';
+                editVariationsList.innerHTML = '';
+            }
+        } catch (error) {
+            console.error('Error loading variations:', error);
+            console.debug('Details:', error.message);
+            // Silently fail - user can still add new variations
+            document.getElementById('edit_has_variations').checked = false;
+            document.getElementById('editVariationsContainer').style.display = 'none';
+        }
+    }
+    
+    // Function to load existing product images when editing
+    async function loadExistingImages(productId) {
+        try {
+            console.log('Loading images for product ' + productId);
+            const response = await fetch(`/seller/product/${productId}/images`);
+            
+            if (!response.ok) {
+                console.warn('API returned status ' + response.status);
+                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+            }
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('Failed to parse response as JSON:', parseError);
+                throw new Error('Invalid JSON response from server');
+            }
+            
+            const existingImagesContainer = document.getElementById('existingImagesContainer');
+            
+            console.log('API Response:', data);
+            console.log('Images count:', data.images ? data.images.length : 0);
+            
+            if (data.success && data.images && data.images.length > 0) {
+                // Create draggable container for existing images
+                existingImagesContainer.innerHTML = '';
+                
+                const container = document.createElement('div');
+                container.style.padding = '10px';
+                container.style.border = '2px dashed #ddd';
+                container.style.borderRadius = '5px';
+                container.style.backgroundColor = '#f8f9fa';
+                container.style.display = 'flex';
+                container.style.flexWrap = 'wrap';
+                container.style.gap = '8px';
+                container.id = 'existingImagesSortable';
+                
+                console.log('Creating ' + data.images.length + ' image elements');
+                
+                data.images.forEach((img, idx) => {
+                    console.log('Processing image ' + idx + ':', img);
+                    
+                    const imageWrapper = document.createElement('div');
+                    imageWrapper.className = 'existing-image-sort-item';
+                    imageWrapper.draggable = true;
+                    imageWrapper.dataset.imageId = img.id;
+                    imageWrapper.dataset.currentOrder = idx;
+                    imageWrapper.style.position = 'relative';
+                    imageWrapper.style.display = 'inline-block';
+                    imageWrapper.style.cursor = 'grab';
+                    imageWrapper.style.transition = 'transform 0.2s ease';
+                    imageWrapper.style.userSelect = 'none';
+                    imageWrapper.style.touchAction = 'none';
+                    
+                    const imgElement = document.createElement('img');
+                    // Don't add / prefix - image_url already has it
+                    imgElement.src = img.image_url.startsWith('/') ? img.image_url : '/' + img.image_url;
+                    console.log('Image src:', imgElement.src);
+                    imgElement.style.width = '80px';
+                    imgElement.style.height = '80px';
+                    imgElement.style.objectFit = 'cover';
+                    imgElement.style.borderRadius = '5px';
+                    imgElement.style.border = idx === 0 ? '3px solid #28a745' : '1px solid #ddd';
+                    imgElement.style.userSelect = 'none';
+                    imgElement.style.pointerEvents = 'none';
+                    
+                    const orderBadge = document.createElement('div');
+                    orderBadge.className = 'badge bg-dark';
+                    orderBadge.style.position = 'absolute';
+                    orderBadge.style.bottom = '5px';
+                    orderBadge.style.left = '5px';
+                    orderBadge.textContent = (idx + 1);
+                    
+                    const label = document.createElement('div');
+                    label.style.position = 'absolute';
+                    label.style.top = '0';
+                    label.style.right = '0';
+                    label.style.backgroundColor = idx === 0 ? '#28a745' : '#6c757d';
+                    label.style.color = 'white';
+                    label.style.padding = '2px 5px';
+                    label.style.fontSize = '10px';
+                    label.style.borderRadius = '0 5px 0 5px';
+                    label.textContent = idx === 0 ? 'Primary' : '#' + (idx + 1);
+                    
+                    imageWrapper.appendChild(imgElement);
+                    imageWrapper.appendChild(orderBadge);
+                    imageWrapper.appendChild(label);
+                    container.appendChild(imageWrapper);
+                });
+                
+                existingImagesContainer.appendChild(container);
+                
+                console.log('Images loaded, setting up drag handlers');
+                // Add drag handlers for existing images
+                setupExistingImageDragHandlers();
+            } else {
+                console.log('No images found or API returned success:false');
+                existingImagesContainer.innerHTML = '<p class="text-muted mb-0">No images uploaded yet</p>';
+            }
+        } catch (error) {
+            console.error('Error loading images:', error);
+            const existingImagesContainer = document.getElementById('existingImagesContainer');
+            existingImagesContainer.innerHTML = '<p class="text-danger mb-0">Error loading images: ' + error.message + '</p>';
+        }
+    }
+    
+    // Drag handlers for existing images
+    function setupExistingImageDragHandlers() {
+        let draggedElement = null;
+        const imagesContainer = document.querySelector('#existingImagesSortable');
+        
+        if (!imagesContainer) {
+            console.warn('Could not find images container for drag handlers');
+            return;
+        }
+        
+        // Get all image items
+        const imageItems = imagesContainer.querySelectorAll('.existing-image-sort-item');
+        console.log('Setting up drag handlers for ' + imageItems.length + ' items');
+        
+        imageItems.forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                this.style.opacity = '0.5';
+                this.style.cursor = 'grabbing';
+                e.dataTransfer.effectAllowed = 'move';
+                console.log('Dragging item with ID: ' + this.dataset.imageId);
+            });
+            
+            item.addEventListener('dragend', function(e) {
+                if (draggedElement) {
+                    draggedElement.style.opacity = '1';
+                    draggedElement.style.cursor = 'grab';
+                    draggedElement = null;
+                }
+            });
+            
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.style.opacity = '0.8';
+            });
+            
+            item.addEventListener('dragleave', function(e) {
+                this.style.opacity = '1';
+            });
+            
+            item.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.opacity = '1';
+                
+                if (draggedElement && draggedElement !== this) {
+                    const parent = imagesContainer;
+                    
+                    // Get all items
+                    const allItems = Array.from(parent.querySelectorAll('.existing-image-sort-item'));
+                    const draggedIndex = allItems.indexOf(draggedElement);
+                    const targetIndex = allItems.indexOf(this);
+                    
+                    console.log('Drop detected: moving from ' + draggedIndex + ' to ' + targetIndex);
+                    
+                    // Swap elements
+                    if (draggedIndex < targetIndex) {
+                        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    } else {
+                        this.parentNode.insertBefore(draggedElement, this);
+                    }
+                    
+                    // Update order badges
+                    updateExistingImageOrder();
+                }
+            });
+        });
+    }
+    
+    function updateExistingImageOrder() {
+        const items = document.querySelectorAll('.existing-image-sort-item');
+        items.forEach((item, index) => {
+            const badge = item.querySelector('.badge');
+            if (badge) badge.textContent = (index + 1);
+            item.dataset.currentOrder = index;
+            
+            // Update border and label
+            const img = item.querySelector('img');
+            const label = item.querySelector('[style*="position: absolute"][style*="top: 0"]');
+            
+            if (index === 0) {
+                img.style.border = '3px solid #28a745';
+                if (label) {
+                    label.style.backgroundColor = '#28a745';
+                    label.textContent = 'Primary';
+                }
+            } else {
+                img.style.border = '1px solid #ddd';
+                if (label) {
+                    label.style.backgroundColor = '#6c757d';
+                    label.textContent = `#${index + 1}`;
+                }
+            }
+        });
+    }
+    
+    // Handle delete product button
+    const deleteProductBtn = document.getElementById('deleteProductBtn');
+    if (deleteProductBtn) {
+        deleteProductBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = document.getElementById('editProductForm');
+            const productId = form.dataset.productId;
+            
+            if (!productId) {
+                alert('Error: Product ID not found');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                fetch(`{{ url_for("seller.delete_product", product_id=0) }}`.replace('0', productId), {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Product deleted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to delete product'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                    alert('Error deleting product: ' + error.message);
+                });
+            }
+        });
+    }
+    
+    // ============= CUSTOM VARIATIONS SYSTEM =============
+    
+    // Variation counter for unique IDs
+    let variationCounter = 0;
+    let editVariationCounter = 0;
+    
+    // Function to create variation entry HTML
+    function createVariationEntry(index, name = '', imagePreview = null, variationId = null) {
+        const id = variationId || `variation_${variationCounter++}`;
+        return `
+            <div class="card mb-2 variation-entry" data-variation-id="${id}">
+                <div class="card-body p-3">
+                    <div class="row align-items-start">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Variation Name</label>
+                            <input type="text" class="form-control form-control-sm variation-name" 
+                                   placeholder="e.g., Red - S, Detick 1cc+Syringe" 
+                                   name="variation_names[]" value="${name}" required>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label small fw-bold">Variation Image</label>
+                            <div class="input-group input-group-sm">
+                                <input type="file" class="form-control variation-image-input" 
+                                       accept="image/*" name="variation_images[]">
+                                <button type="button" class="btn btn-outline-secondary variation-image-btn" title="Click to upload image">
+                                    <i class="fas fa-image"></i> Upload
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <label class="form-label small fw-bold">&nbsp;</label>
+                            <button type="button" class="btn btn-sm btn-danger w-100 remove-variation-btn">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <div class="variation-image-preview border rounded p-2" style="min-height: 80px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                ${imagePreview ? `<img src="${imagePreview}" style="max-width: 100%; max-height: 80px; object-fit: contain;">` : '<span class="text-muted small">No image selected</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Add variation button handler (Add Product Modal)
+    const addVariationBtn = document.getElementById('addVariationBtn');
+    const variationsList = document.getElementById('variationsList');
+    
+    if (addVariationBtn && variationsList) {
+        addVariationBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newEntry = createVariationEntry();
+            variationsList.insertAdjacentHTML('beforeend', newEntry);
+            attachVariationEventHandlers();
+        });
+    }
+    
+    // Add variation button handler (Edit Product Modal)
+    const editAddVariationBtn = document.getElementById('editAddVariationBtn');
+    const editVariationsList = document.getElementById('editVariationsList');
+    
+    if (editAddVariationBtn && editVariationsList) {
+        editAddVariationBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newEntry = createVariationEntry();
+            editVariationsList.insertAdjacentHTML('beforeend', newEntry);
+            attachVariationEventHandlers();
+        });
+    }
+    
+    // Function to attach event handlers to variation entries
+    function attachVariationEventHandlers() {
+        // Image upload handlers
+        document.querySelectorAll('.variation-image-input').forEach(input => {
+            // Remove old listener by cloning
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+        });
+        
+        document.querySelectorAll('.variation-image-input').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const file = this.files[0];
+                const preview = this.closest('.variation-entry').querySelector('.variation-image-preview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 80px; object-fit: contain;">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+        
+        // Remove variation button handlers
+        document.querySelectorAll('.remove-variation-btn').forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+        });
+        
+        document.querySelectorAll('.remove-variation-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.closest('.variation-entry').remove();
+            });
+        });
+        
+        // Image button click handlers
+        document.querySelectorAll('.variation-image-btn').forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+        });
+        
+        document.querySelectorAll('.variation-image-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.closest('.input-group').querySelector('.variation-image-input').click();
+            });
+        });
+    }
+    
+    // Product Variations Toggle (Add Product Modal)
+    const hasVariationsCheckbox = document.getElementById('has_variations');
+    const variationsContainer = document.getElementById('variationsContainer');
+    
+    if (hasVariationsCheckbox && variationsContainer) {
+        hasVariationsCheckbox.addEventListener('change', function() {
+            variationsContainer.style.display = this.checked ? 'block' : 'none';
+            if (this.checked && variationsList.children.length === 0) {
+                // Add one empty variation entry when checkbox is checked
+                const newEntry = createVariationEntry();
+                variationsList.insertAdjacentHTML('beforeend', newEntry);
+                attachVariationEventHandlers();
+            }
+        });
+    }
+    
+    // Product Variations Toggle (Edit Product Modal)
+    const editHasVariationsCheckbox = document.getElementById('edit_has_variations');
+    const editVariationsContainer = document.getElementById('editVariationsContainer');
+    
+    if (editHasVariationsCheckbox && editVariationsContainer) {
+        editHasVariationsCheckbox.addEventListener('change', function() {
+            editVariationsContainer.style.display = this.checked ? 'block' : 'none';
+            if (this.checked && editVariationsList.children.length === 0) {
+                // Add one empty variation entry when checkbox is checked
+                const newEntry = createVariationEntry();
+                editVariationsList.insertAdjacentHTML('beforeend', newEntry);
+                attachVariationEventHandlers();
+            }
+        });
+    }
+    
+    // Handle Add Product Form Submit - Save image order
+    const addProductForm = document.getElementById('addProductFormModal');
+    if (addProductForm) {
+        addProductForm.addEventListener('submit', function(e) {
+            // Save the image order before submission
+            const imageOrderInput = document.getElementById('imageOrder');
+            if (imageOrderInput && Object.keys(fileOrderMap).length > 0) {
+                imageOrderInput.value = JSON.stringify(fileOrderMap);
+            }
+        });
+    }
+    
+    // Handle Edit Product Form Submit - Save image order
+    const editProductForm = document.getElementById('editProductForm');
+    if (editProductForm) {
+        editProductForm.addEventListener('submit', function(e) {
+            console.log('=== FORM SUBMIT EVENT ===');
+            const editImageOrderInput = document.getElementById('editImageOrder');
+            
+            // Check if new images are being uploaded
+            const newImagesUploaded = Object.keys(editFileOrderMap).length > 0;
+            console.log('New images uploaded:', newImagesUploaded);
+            console.log('editFileOrderMap:', editFileOrderMap);
+            
+            if (newImagesUploaded) {
+                // Save the new image order
+                const newImageOrderJson = JSON.stringify(editFileOrderMap);
+                editImageOrderInput.value = newImageOrderJson;
+                console.log('Set image_order for NEW images:', newImageOrderJson);
+            } else {
+                // Check if existing images were reordered
+                const existingItems = document.querySelectorAll('.existing-image-sort-item');
+                console.log('Found existing image items:', existingItems.length);
+                
+                if (existingItems.length > 0) {
+                    // Capture the existing image order - send as simple array of IDs
+                    const existingImageOrder = [];
+                    existingItems.forEach((item, idx) => {
+                        const imageId = parseInt(item.dataset.imageId);
+                        console.log(`  Item ${idx}: ID=${imageId}, data-imageId=${item.dataset.imageId}, order=${item.dataset.currentOrder}`);
+                        existingImageOrder.push(imageId);
+                    });
+                    const imageOrderJson = JSON.stringify(existingImageOrder);
+                    console.log('Submitting image order for existing images:', existingImageOrder);
+                    editImageOrderInput.value = imageOrderJson;
+                    console.log('Hidden field value set to:', editImageOrderInput.value);
+                } else {
+                    console.log('No existing items found - image_order will not be set');
+                }
+            }
+            console.log('Final image_order hidden field value:', editImageOrderInput.value);
+            console.log('=== END FORM SUBMIT EVENT ===');
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

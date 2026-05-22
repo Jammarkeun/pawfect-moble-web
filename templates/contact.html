@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - Pawfect Finds{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================
+       ROOT COLOR PALETTE
+    ============================ */
+    :root {
+        --brown-dark: #4E342E;
+        --brown-primary: #6D4C41;
+        --brown-light: #D7CCC8;
+        --tan: #EBD5B3;
+        --white: #FFFFFF;
+        --beige-bg: #FAF3E0;
+        --bs-light-rgb: 248, 249, 250
+    }
+
+    /* ============================
+       GLOBAL STYLES
+    ============================ */
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+        background-color: var(--beige-bg);
+        color: var(--brown-dark);
+    }
+
+    a {
+        color: var(--brown-dark);
+    }
+
+    a:hover {
+        color: var(--brown-primary);
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background-color: #8B4513;
+        border-color: var(--brown-primary);
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--brown-dark);
+        border-color: var(--brown-dark);
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        background-color: var(--white);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .card .card-body h3, .card .card-body h5 {
+        color: var(--brown-dark);
+    }
+
+    .bg-primary {
+        background-color: var(--brown-primary) !important;
+    }
+
+    .text-primary {
+        color: var(--brown-primary) !important;
+    }
+
+    .bg-light {
+        background-color: #f8f8f8 !important;
+    }
+
+    .text-muted {
+        color: #5a4a42 !important;
+    }
+
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+
+    .accordion-button {
+        background-color: var(--white);
+        color: var(--brown-dark);
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: var(--tan);
+        color: var(--brown-dark);
+    }
+
+    .accordion-body {
+        background-color: var(--white);
+        color: var(--brown-dark);
+    }
+
+    /* Smaller icons for contact info */
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: var(--white);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 mb-3">Get in Touch</h1>
+                <p class="lead">We'd love to hear from you! Whether you have questions, feedback, or need support, our team is here to help.</p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-envelope fa-5x mb-3" style="color: var(--tan);"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTACT FORM & INFO -->
+<div class="container py-5">
+    <div class="row">
+
+        <!-- CONTACT FORM -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="mb-4"><i class="fas fa-paper-plane"></i> Send us a Message</h3>
+
+                    <form method="POST" action="{{ url_for('public.contact') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" name="phone">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Subject *</label>
+                            <select class="form-select" name="subject" required>
+                                <option value="">Select a topic</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="order">Order Support</option>
+                                <option value="seller">Become a Seller</option>
+                                <option value="technical">Technical Issue</option>
+                                <option value="partnership">Partnership Opportunity</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Message *</label>
+                            <textarea class="form-control" rows="5" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter" value="1">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to our newsletter for pet care tips and exclusive offers
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTACT INFO -->
+        <div class="col-lg-4">
+
+            <div class="card mb-4" style="background-color: var(--tan);">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-info-circle"></i> Contact Information</h5>
+
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="contact-icon" style="background-color: var(--brown-primary);">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <strong>Email</strong><br>
+                            <a href="mailto:pawfectfindsshop76@gmail.com">pawfectfindsshop76@gmail.com</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="contact-icon" style="background-color: var(--brown-dark);">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <strong>Phone</strong><br>
+                            +1 (555) 123-4567<br>
+                            <small class="text-muted">Mon-Fri, 9am-6pm</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="contact-icon" style="background-color: var(--brown-primary);">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <strong>Response Time</strong><br>
+                            Within 24 hours
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-question-circle"></i> Quick Help</h5>
+                    <div class="list-group list-group-flush">
+                        <a class="list-group-item border-0"><i class="fas fa-shipping-fast me-2 text-primary"></i> Track Your Order</a>
+                        <a class="list-group-item border-0"><i class="fas fa-undo me-2 text-primary"></i> Returns & Refunds</a>
+                        <a class="list-group-item border-0"><i class="fas fa-store me-2 text-primary"></i> Seller Information</a>
+                        <a class="list-group-item border-0"><i class="fas fa-shield-alt me-2 text-primary"></i> Account Security</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Frequently Asked Questions</h2>
+            <p class="lead text-muted">Find answers to common questions before reaching out.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How do I track my order?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                You will receive a tracking number once your order ships.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What is your return policy?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                We offer a 30-day return policy for most items.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                How do I become a seller?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                Simply submit your seller application.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SOCIAL -->
+<div class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4>Stay Connected</h4>
+                <p>Follow us for updates and pet stories.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a class="text-white me-3 fs-4"><i class="fab fa-facebook"></i></a>
+                <a class="text-white me-3 fs-4"><i class="fab fa-twitter"></i></a>
+                <a class="text-white me-3 fs-4"><i class="fab fa-instagram"></i></a>
+                <a class="text-white fs-4"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

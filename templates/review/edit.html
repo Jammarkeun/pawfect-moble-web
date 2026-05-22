@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Edit Review - Pawfect Finds{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Edit Your Review</h4>
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                        <div class="mb-3">
+                            <label class="form-label">Rating</label>
+                            <div class="star-rating">
+                                {% for i in range(5, 0, -1) %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if review.rating == i %}checked{% endif %}>
+                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Your Review</label>
+                            <textarea name="comment" class="form-control" rows="4">{{ review.comment or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Review</button>
+                        <a href="{{ url_for('review.my_reviews') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

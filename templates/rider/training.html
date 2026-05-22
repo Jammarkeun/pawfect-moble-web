@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Rider Training - Pawfect Finds{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Rider Training & Orientation</h3>
+                    <p class="mb-0 small">Complete this training to activate your rider account</p>
+                </div>
+                <div class="card-body">
+                    {% if training_status and training_status.status == 'completed' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Training Completed!</strong> Your rider account is now active. You can start accepting deliveries.
+                        <div class="mt-3">
+                            <a href="{{ url_for('rider.dashboard') }}" class="btn btn-success">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    
+                    <!-- Training Modules -->
+                    <div class="accordion" id="trainingAccordion">
+                        
+                        <!-- Module 1: Platform Overview -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    <i class="fas fa-info-circle me-2"></i> Module 1: Platform Overview
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#trainingAccordion">
+                                <div class="accordion-body">
+                                    <h5>Welcome to Pawfect Finds Delivery Platform</h5>
+                                    <p>As a rider, you'll be responsible for delivering pet products to customers across your area.</p>
+                                    
+                                    <h6>Key Features:</h6>
+                                    <ul>
+                                        <li><strong>Real-time Order Updates:</strong> Receive instant notifications via Socket.IO when new orders are available</li>
+                                        <li><strong>Flexible Schedule:</strong> Accept deliveries when you're online and available</li>
+                                        <li><strong>Earnings Tracking:</strong> Monitor your delivery earnings and performance</li>
+                                        <li><strong>Navigation Support:</strong> Get directions to pickup and delivery locations</li>
+                                    </ul>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input module-check" type="checkbox" id="module1Check">
+                                        <label class="form-check-label" for="module1Check">
+                                            I understand the platform features
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Module 2: Using the Rider App -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    <i class="fas fa-mobile-alt me-2"></i> Module 2: Using the Rider Dashboard
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#trainingAccordion">
+                                <div class="accordion-body">
+                                    <h5>How to Use Your Dashboard</h5>
+                                    
+                                    <h6>1. Going Online</h6>
+                                    <p>Toggle your availability status to start receiving delivery requests. The system uses Socket.IO for real-time updates.</p>
+                                    
+                                    <h6>2. Accepting Orders</h6>
+                                    <ol>
+                                        <li>Review available orders in the "Available Orders" section</li>
+                                        <li>Check order details: items, delivery address, and payment amount</li>
+                                        <li>Click "Accept Order" to confirm the delivery</li>
+                                        <li>Navigate to the seller location for pickup</li>
+                                    </ol>
+                                    
+                                    <h6>3. Managing Deliveries</h6>
+                                    <ul>
+                                        <li>Update delivery status: "Picked Up" → "On the Way" → "Delivered"</li>
+                                        <li>Communicate with customers if needed</li>
+                                        <li>Take photos as proof of delivery</li>
+                                    </ul>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input module-check" type="checkbox" id="module2Check">
+                                        <label class="form-check-label" for="module2Check">
+                                            I understand how to use the dashboard
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Module 3: Delivery Protocols -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    <i class="fas fa-clipboard-list me-2"></i> Module 3: Delivery Protocols
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#trainingAccordion">
+                                <div class="accordion-body">
+                                    <h5>Standard Operating Procedures</h5>
+                                    
+                                    <h6>Pickup Process:</h6>
+                                    <ol>
+                                        <li>Arrive at seller location on time</li>
+                                        <li>Verify order details and items</li>
+                                        <li>Handle products with care (especially fragile pet items)</li>
+                                        <li>Confirm pickup in the app</li>
+                                    </ol>
+                                    
+                                    <h6>Delivery Process:</h6>
+                                    <ol>
+                                        <li>Contact customer if you're running late</li>
+                                        <li>Handle packages carefully during transit</li>
+                                        <li>Verify delivery address before handing over items</li>
+                                        <li>Collect payment if COD (Cash on Delivery)</li>
+                                        <li>Mark delivery as completed in the system</li>
+                                    </ol>
+                                    
+                                    <h6>Safety Guidelines:</h6>
+                                    <ul>
+                                        <li>Always wear your rider identification</li>
+                                        <li>Follow traffic rules and drive safely</li>
+                                        <li>Keep your vehicle well-maintained</li>
+                                        <li>Report any incidents immediately</li>
+                                    </ul>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input module-check" type="checkbox" id="module3Check">
+                                        <label class="form-check-label" for="module3Check">
+                                            I understand delivery protocols
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Module 4: Customer Service -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    <i class="fas fa-users me-2"></i> Module 4: Customer Service Excellence
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#trainingAccordion">
+                                <div class="accordion-body">
+                                    <h5>Providing Excellent Service</h5>
+                                    
+                                    <h6>Professional Conduct:</h6>
+                                    <ul>
+                                        <li>Be polite and respectful to all customers</li>
+                                        <li>Dress appropriately and maintain good hygiene</li>
+                                        <li>Communicate clearly and professionally</li>
+                                        <li>Handle complaints with patience</li>
+                                    </ul>
+                                    
+                                    <h6>Handling Special Situations:</h6>
+                                    <ul>
+                                        <li><strong>Customer not available:</strong> Contact them via phone/message</li>
+                                        <li><strong>Wrong address:</strong> Verify with customer before proceeding</li>
+                                        <li><strong>Damaged items:</strong> Report immediately, don't complete delivery</li>
+                                        <li><strong>Payment issues:</strong> Contact support for assistance</li>
+                                    </ul>
+                                    
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Important:</strong> Your behavior reflects on the entire platform. Maintain professionalism at all times.
+                                    </div>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input module-check" type="checkbox" id="module4Check">
+                                        <label class="form-check-label" for="module4Check">
+                                            I understand customer service standards
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Module 5: Earnings & Performance -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFive">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                    <i class="fas fa-chart-line me-2"></i> Module 5: Earnings & Performance
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#trainingAccordion">
+                                <div class="accordion-body">
+                                    <h5>Maximizing Your Earnings</h5>
+                                    
+                                    <h6>How You Earn:</h6>
+                                    <ul>
+                                        <li>Base delivery fee per order</li>
+                                        <li>Distance-based compensation</li>
+                                        <li>Bonuses for on-time deliveries</li>
+                                        <li>Performance incentives</li>
+                                    </ul>
+                                    
+                                    <h6>Performance Metrics:</h6>
+                                    <ul>
+                                        <li><strong>On-time Delivery Rate:</strong> Maintain 95%+ for bonuses</li>
+                                        <li><strong>Customer Rating:</strong> Aim for 4.5+ stars</li>
+                                        <li><strong>Acceptance Rate:</strong> Higher rates get priority access</li>
+                                        <li><strong>Completion Rate:</strong> Don't cancel accepted orders</li>
+                                    </ul>
+                                    
+                                    <h6>Tips for Success:</h6>
+                                    <ul>
+                                        <li>Be online during peak hours</li>
+                                        <li>Accept orders promptly</li>
+                                        <li>Plan efficient routes</li>
+                                        <li>Maintain good customer reviews</li>
+                                    </ul>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input module-check" type="checkbox" id="module5Check">
+                                        <label class="form-check-label" for="module5Check">
+                                            I understand the earnings structure
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Complete Training Button -->
+                    <div class="mt-4 text-center">
+                        <button type="button" id="completeTrainingBtn" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Complete Training & Activate Account
+                        </button>
+                        <p class="text-muted mt-2 small">Complete all modules above to activate this button</p>
+                    </div>
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const moduleChecks = document.querySelectorAll('.module-check');
+    const completeBtn = document.getElementById('completeTrainingBtn');
+    
+    if (moduleChecks.length > 0 && completeBtn) {
+        // Check if all modules are completed
+        function checkAllModules() {
+            let allChecked = true;
+            moduleChecks.forEach(check => {
+                if (!check.checked) {
+                    allChecked = false;
+                }
+            });
+            
+            if (completeBtn) {
+                completeBtn.disabled = !allChecked;
+            }
+        }
+        
+        // Add event listeners
+        moduleChecks.forEach(check => {
+            check.addEventListener('change', checkAllModules);
+        });
+        
+        // Complete training
+        if (completeBtn) {
+            completeBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to complete the training and activate your rider account?')) {
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                    
+                    fetch('{{ url_for("rider_registration.complete_training") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Congratulations! Your rider account is now active.');
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert('Error: ' + data.message);
+                            this.disabled = false;
+                            this.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Training & Activate Account';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Training & Activate Account';
+                    });
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

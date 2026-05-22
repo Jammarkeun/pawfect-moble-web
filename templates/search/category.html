@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} - Pawfect Finds{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('public.landing') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.browse_products') }}">Products</a></li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+        </ol>
+    </nav>
+    <h1 class="mb-2">{{ category.name }}</h1>
+    {% if category.description %}<p class="text-muted mb-4">{{ category.description }}</p>{% endif %}
+    {% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-3 mb-4">
+            <div class="card product-card h-100">
+                <a href="{{ url_for('public.product_detail', product_id=product.id) }}">
+                    <img src="{{ (product.image_url or product.images[0].image_url if product.images else '')|image_url }}" class="card-img-top" alt="{{ product.name }}" style="aspect-ratio: 4 / 3; height: auto; min-height: 180px; object-fit: contain; background: var(--beige);">
+                </a>
+                <div class="card-body d-flex flex-column">
+                    <h6 class="card-title">{{ product.name }}</h6>
+                    <p class="fw-bold mb-2">{{ product.effective_price|currency }}</p>
+                    <button class="btn btn-primary btn-sm mt-auto add-to-cart" data-product-id="{{ product.id }}">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+        <p class="lead">No products in this category yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cart-wishlist-count.js') }}"></script>
+{% endblock %}

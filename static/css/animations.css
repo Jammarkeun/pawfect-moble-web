@@ -1,0 +1,472 @@
+/* ===================================
+   PAWFECT FINDS - ANIMATION POLISH
+   Page Transitions & Micro-interactions
+   =================================== */
+
+/* ========== PAGE TRANSITIONS ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== PAGE LOAD ANIMATIONS ========== */
+body {
+    animation: fadeIn 0.2s ease-in;
+}
+
+main > .container {
+    animation: slideInUp 0.25s ease-out;
+}
+
+.hero-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.category-card,
+.product-card {
+    animation: scaleIn 0.25s ease-out;
+    animation-fill-mode: both;
+}
+
+/* Stagger animation for cards */
+.category-card:nth-child(1),
+.product-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.category-card:nth-child(2),
+.product-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.category-card:nth-child(3),
+.product-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.category-card:nth-child(4),
+.product-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.category-card:nth-child(5),
+.product-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.category-card:nth-child(6),
+.product-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+/* ========== BUTTON MICRO-INTERACTIONS ========== */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 8px 20px rgba(109, 76, 65, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(109, 76, 65, 0.3);
+}
+
+/* ========== CARD HOVER EFFECTS ========== */
+.product-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.product-card img {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover img {
+    transform: scale(1.08);
+}
+
+.category-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card:hover {
+    transform: translateY(-6px) rotate(1deg);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.category-card i {
+    transition: transform 0.2s ease;
+}
+
+.category-card:hover i {
+    animation: bounce 0.6s ease infinite;
+}
+
+/* ========== NAVIGATION ANIMATIONS ========== */
+.navbar {
+    animation: slideInDown 0.25s ease-out;
+}
+
+.nav-link {
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--brown-primary, #6D4C41);
+    transition: width 0.2s ease, left 0.2s ease;
+    display: none; /* Disabled underline animation */
+}
+
+.nav-link:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+/* Disable underline for dropdown toggles and position-relative links */
+.nav-link.dropdown-toggle::after,
+.nav-link.position-relative::after,
+.nav-item.dropdown .nav-link::after,
+.navbar-nav .dropdown .nav-link::after {
+    display: none !important;
+}
+
+/* ========== FORM INPUT ANIMATIONS ========== */
+.form-control {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-control:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.2);
+}
+
+/* ========== BADGE ANIMATIONS ========== */
+
+.badge:hover {
+    animation: none;
+    transform: scale(1.1);
+}
+
+/* ========== LOADING SPINNER ========== */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(109, 76, 65, 0.3);
+    border-top-color: #6D4C41;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.spinner-large {
+    width: 50px;
+    height: 50px;
+    border-width: 5px;
+}
+
+/* ========== NOTIFICATION ANIMATIONS ========== */
+
+
+.alert {
+    animation: slideInDown 0.25s ease-out;
+}
+
+/* ========== CART BADGE PULSE ========== */
+#notification-count,
+#support-unread {
+    animation: pulse 2s infinite;
+}
+
+/* ========== IMAGE LOADING EFFECT ========== */
+img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+img.loaded,
+img[src] {
+    opacity: 1;
+}
+
+/* ========== WISHLIST HEART ANIMATION ========== */
+.fa-heart {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fa-heart:hover {
+    color: #e74c3c !important;
+    transform: scale(1.2);
+}
+
+/* ========== SHOPPING CART ICON ANIMATION ========== */
+.fa-shopping-cart {
+    transition: transform 0.2s ease;
+}
+
+.fa-shopping-cart:hover {
+    transform: scale(1.1);
+    animation: shake 0.5s ease;
+}
+
+/* ========== MODAL ANIMATIONS ========== */
+.modal {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== DROPDOWN ANIMATIONS ========== */
+.dropdown-menu {
+    animation: slideInDown 0.15s ease-out;
+    transform-origin: top;
+}
+
+/* ========== FOOTER ANIMATION ========== */
+footer {
+    animation: slideInUp 0.3s ease-out;
+}
+
+/* ========== SCROLL ANIMATIONS ========== */
+.scroll-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.scroll-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* ========== FLOATING ELEMENTS ========== */
+.support-chat-fab {
+    animation: fadeIn 0.25s ease-in 0.3s both;
+}
+
+.support-chat-fab .btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.support-chat-fab .btn:hover {
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 10px 25px rgba(109, 76, 65, 0.4);
+}
+
+/* ========== QUANTITY BUTTON ANIMATIONS ========== */
+.input-group .btn {
+    transition: all 0.2s ease;
+}
+
+.input-group .btn:active {
+    transform: scale(0.9);
+}
+
+/* ========== BREADCRUMB ANIMATION ========== */
+.breadcrumb {
+    animation: slideInLeft 0.25s ease-out;
+}
+
+/* ========== STAR RATING ANIMATION ========== */
+.fa-star {
+    transition: all 0.2s ease;
+}
+
+.fa-star:hover {
+    transform: scale(1.2) rotate(15deg);
+}
+
+/* ========== SMOOTH SCROLL ========== */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ========== LINK HOVER EFFECTS ========== */
+a {
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+a:hover {
+    transform: translateX(2px);
+}
+
+/* Disable transform for navbar links */
+.navbar-nav .nav-link:hover {
+    transform: none !important;
+}
+
+/* ========== ICON SPIN ON HOVER ========== */
+.fa-sync,
+.fa-redo,
+.fa-refresh {
+    transition: transform 0.2s ease;
+}
+
+.fa-sync:hover,
+.fa-redo:hover,
+.fa-refresh:hover {
+    transform: rotate(180deg);
+}
+
+/* ========== ACCESSIBILITY: REDUCE MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========== PAGE TRANSITION OVERLAY ========== */
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--brown-primary, #6D4C41);
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.page-transition.active {
+    display: block;
+    opacity: 1;
+}

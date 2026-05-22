@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" {% if current_user %}data-user-role="{{ current_user.role }}"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token_value }}">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}{{ meta.title if meta else 'Pawfect Finds - Your One-Stop Pet Shop' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ meta.description if meta else 'Discover the best pet products at Pawfect Finds. Quality food, toys, accessories, and more for your beloved pets.' }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ meta.keywords if meta else 'pet shop, pet products, dog food, cat food, pet toys, pet accessories, online pet store' }}{% endblock %}">
+    <meta name="author" content="Pawfect Finds">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ request.url }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{{ meta['og:type'] if meta else 'website' }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{{ meta['og:title'] if meta else 'Pawfect Finds - Your One-Stop Pet Shop' }}">
+    <meta property="og:description" content="{{ meta['og:description'] if meta else 'Discover the best pet products at Pawfect Finds.' }}">
+    <meta property="og:image" content="{{ meta['og:image'] if meta else url_for('static', filename='PF-logo.png', _external=True) }}">
+    <meta property="og:site_name" content="Pawfect Finds">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{{ meta['twitter:title'] if meta else 'Pawfect Finds' }}">
+    <meta property="twitter:description" content="{{ meta['twitter:description'] if meta else 'Discover the best pet products' }}">
+    <meta property="twitter:image" content="{{ meta['twitter:image'] if meta else url_for('static', filename='PF-logo.png', _external=True) }}">
+    
+    <!-- Structured Data -->
+    {% if structured_data %}
+    <script type="application/ld+json">
+    {{ structured_data | tojson | safe }}
+    </script>
+    {% endif %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='PF-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='PF-logo.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='PF-logo.png') }}">
+    
+    <!-- Google Fonts (Poppins - matches Flutter app) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery first, then Popper.js, then Bootstrap JS, then Socket.IO -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css', v=ASSET_VERSION) }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/animations.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/onboarding.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/search-autocomplete.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/form-validation.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/user-menu.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/notifications-menu.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/toast-modal.css', v=ASSET_VERSION) }}" rel="stylesheet">
+    <!-- Chatbot CSS -->
+    <link href="{{ url_for('static', filename='css/chatbot.css', v=ASSET_VERSION) }}" rel="stylesheet">
+    
+    <!-- Back button inline styles -->
+    <style>
+        .back-fab {
+            position: fixed;
+            left: 16px;
+            top: 80px;
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .back-fab.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-fab .btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation (white app bar - matches Flutter) -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('public.landing') }}">
+                <img src="{{ url_for('static', filename='PF-logo.png') }}" alt="Pawfect Finds" height="36" class="d-inline-block align-text-top me-2">
+                Pawfect Finds
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('public.landing') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('public.browse_products') }}">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('public.about') }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('public.contact') }}">Contact</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user %}
+                        <!-- Notifications bell -->
+                        <li class="nav-item dropdown me-2">
+                            <a class="nav-link position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span id="notification-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="display:none; min-width: 20px; background: var(--error);">0</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end p-0 notif-menu" aria-labelledby="notifDropdown">
+                                <li class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2">
+                                    <span><i class="fas fa-bell me-2"></i>Notifications</span>
+                                    <a href="#" id="mark-all-notifs" style="text-decoration: none; color: var(--brown-primary); font-size: 0.85rem;">Mark all as read</a>
+                                </li>
+                                <li><hr class="dropdown-divider my-0"></li>
+                                <li>
+                                    <ul id="notification-list" class="list-unstyled mb-0 notif-list" style="min-height: 100px;"></ul>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Cart and Wishlist icons for regular users -->
+                        {% if current_user.role == 'user' %}
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" href="{{ url_for('wishlist.index') }}" title="Wishlist">
+                                    <i class="fas fa-heart"></i>
+                                    <span id="wishlist-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="display:none; min-width: 18px; background: var(--error); font-size: 0.65rem;">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" href="{{ url_for('user.view_cart') }}" title="Cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="display:none; min-width: 18px; background: var(--error); font-size: 0.65rem;">0</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- User dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                {% if current_user.profile_image %}
+                                    <img src="{{ current_user.profile_image|image_url }}" alt="Profile" class="rounded-circle me-1" style="width: 28px; height: 28px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-circle me-1" style="font-size: 1.3rem;"></i>
+                                {% endif %}
+                                <span class="d-none d-lg-inline">{{ current_user.first_name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end user-menu">
+                                <!-- User header card -->
+                                <li class="user-card px-3 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if current_user.profile_image %}
+                                            <img src="{{ current_user.profile_image|image_url }}" alt="Profile" class="avatar">
+                                        {% else %}
+                                            <div class="avatar bg-secondary d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="user-meta">
+                                            <div class="name fw-semibold">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                                            <div class="sub small text-muted">{{ current_user.email }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if current_user.role == 'admin' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                                        <i class="fas fa-tachometer-alt"></i> <span>Admin Dashboard</span>
+                                    </a></li>
+                                {% elif current_user.role == 'seller' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('seller.dashboard') }}">
+                                        <i class="fas fa-store"></i> <span>Seller Dashboard</span>
+                                    </a></li>
+                                {% elif current_user.role == 'rider' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('rider.dashboard') }}">
+                                        <i class="fas fa-motorcycle"></i> <span>Rider Dashboard</span>
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('user.settings') }}">
+                                        <i class="fas fa-cog"></i> <span>Account Settings</span>
+                                    </a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{{ url_for('user.orders') }}">
+                                        <i class="fas fa-box"></i> <span>My Orders</span>
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('user.settings') }}">
+                                        <i class="fas fa-cog"></i> <span>Account Settings</span>
+                                    </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item logout-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login', force='1') }}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-user-plus"></i> Sign Up
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Container (centered modal-style) -->
+    <div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index:1080; width:min(92vw, 520px);">
+        <div id="toastContainer" class="toast-container w-100"></div>
+    </div>
+    <div id="toastOverlay" class="pf-toast-overlay" style="display:none;"></div>
+
+    <!-- Flash messages -> JS bootstrap toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <script>
+          window.FLASH_MESSAGES = window.FLASH_MESSAGES || [];
+          {% for category, message in messages %}
+            window.FLASH_MESSAGES.push({
+              category: "{{ 'danger' if category == 'error' else category }}",
+              message: {{ message|tojson }}
+            });
+          {% endfor %}
+        </script>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Back Button -->
+    <div class="back-fab" id="backFab">
+        <button class="btn btn-primary" onclick="goBack()" title="Go Back">
+            <i class="fas fa-arrow-left fa-lg"></i>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-paw me-2"></i>Pawfect Finds</h5>
+                    <p style="color: var(--brown-light);">Your one-stop shop for all pet supplies. From dogs to cats, birds to fish - we've got everything your furry, feathered, or finned friends need!</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('public.browse_products') }}">Products</a></li>
+                        <li class="mb-2"><a href="{{ url_for('public.about') }}">About Us</a></li>
+                        <li class="mb-2"><a href="{{ url_for('public.contact') }}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-envelope me-2" style="color: var(--brown-light);"></i> pawfectfindsshop76@gmail.com</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2" style="color: var(--brown-light);"></i> +1 (555) 123-PETS</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: var(--brown-light);"></i> 123 Pet Street, Pet City</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0" style="color: var(--brown-light);">&copy; 2025 Pawfect Finds. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function goBack() {
+            if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+                window.history.back();
+            } else {
+                window.location.href = "{{ url_for('public.landing') }}";
+            }
+        }
+        
+        function updateBackButtonVisibility() {
+            const backFab = document.getElementById('backFab');
+            if (!backFab) return;
+            const isLandingPage = '{{ request.endpoint }}' === 'public.landing';
+            const hasHistory = window.history.length > 1;
+            if (!isLandingPage && hasHistory) {
+                backFab.classList.add('show');
+            } else {
+                backFab.classList.remove('show');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl);
+            });
+            updateBackButtonVisibility();
+        });
+        
+        window.addEventListener('pageshow', updateBackButtonVisibility);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Toasts -->
+    <script src="{{ url_for('static', filename='js/toast.js', v=ASSET_VERSION) }}"></script>
+
+    <!-- Recently Viewed Products -->
+    <script src="{{ url_for('static', filename='js/recently-viewed.js') }}"></script>
+    <!-- Onboarding Tooltips -->
+    <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+    <!-- Search Autocomplete -->
+    <script src="{{ url_for('static', filename='js/search-autocomplete.js') }}"></script>
+    <!-- Real-time Form Validation -->
+    <script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
+
+    {% if current_user %}
+    <script>
+      (function(){
+        try {
+          window.socket = window.socket || (window.io ? window.io() : null);
+          if (!window.socket) return;
+          window.CURRENT_USER = { id: {{ current_user.id|tojson }}, role: {{ current_user.role|tojson }} };
+          window.socket.emit('subscribe_notifications', { user_id: {{ current_user.id|tojson }}, role: {{ current_user.role|tojson }} });
+        } catch(e) {}
+      })();
+    </script>
+    <script src="{{ url_for('static', filename='js/notifications.js', v=ASSET_VERSION) }}"></script>
+    {% if current_user.role == 'user' %}
+    <script src="{{ url_for('static', filename='js/cart-wishlist-count.js') }}"></script>
+    {% endif %}
+    {% endif %}
+    
+    <!-- PawfectBot Chatbot -->
+    <script src="{{ url_for('static', filename='js/chatbot.js', v=ASSET_VERSION) }}"></script>
+</body>
+</html>

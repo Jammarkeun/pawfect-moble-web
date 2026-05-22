@@ -1,0 +1,82 @@
+<div class="order-details">
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <h6 class="mb-2">Customer Information</h6>
+      <p class="mb-1"><strong>Name:</strong> {{ order.customer_name }}</p>
+      <p class="mb-1"><strong>Phone:</strong> {{ order.customer_phone }}</p>
+      <p class="mb-1"><strong>Profile Address:</strong> {{ order.customer_address or 'N/A' }}</p>
+      <p class="mb-0 shipping-address"><strong>Delivery Address:</strong> <span class="shipping-address-text">{{ order.shipping_address or ((order.house_number ~ (order.street and ' ' ~ order.street or '')) ~ (order.barangay and ', Barangay ' ~ order.barangay or '') ~ (order.city and ', ' ~ order.city or '') ~ (order.province and ', ' ~ order.province or '') ~ (order.country and ', ' ~ order.country or ''))|trim(', ') or (order.customer_address or 'N/A') }}</span></p>
+    </div>
+    <div class="col-md-6">
+      <h6 class="mb-2">Order Information</h6>
+      <p class="mb-1"><strong>Order Number:</strong> {{ order.order_number }}</p>
+      <p class="mb-1"><strong>Order Date:</strong> {{ order.created_at if order.created_at else '' }}</p>
+      <p class="mb-1"><strong>Payment:</strong> {{ (order.payment_method or 'N/A')|upper }}{% if order.payment_status %} — {{ order.payment_status|title }}{% endif %}</p>
+      <p class="mb-1"><strong>Total Amount:</strong> ₱{{ '%.2f'|format(order.total_amount or 0) }}</p>
+      <p class="mb-1"><strong>Status:</strong> <span class="badge bg-secondary">{{ (order.status or 'N/A').replace('_',' ')|title }}</span></p>
+      {% if order.notes %}<p class="mb-0"><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2 mb-3">
+    <button type="button" class="btn btn-outline-primary btn-sm" id="viewMapBtn">
+      <i class="fas fa-map-marked-alt me-1"></i> View Map
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" id="startNavigateBtn">
+      <i class="fas fa-location-arrow me-1"></i> Start Navigate
+    </button>
+  </div>
+  <div id="modalMap" style="height: 260px; width: 100%; border: 1px solid #ddd; border-radius: 8px; display: none;"></div>
+  <hr>
+  <h6>Order Items ({{ items|length }})</h6>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th class="text-center">Quantity</th>
+          <th class="text-end">Price</th>
+          <th class="text-end">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        {% set subtotal = (item.quantity or 0) * (item.price_at_time or 0) %}
+        <tr>
+          <td>
+            {% if item.image_url %}
+              <img src="{{ item.image_url|image_url }}" alt="{{ item.name }}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;margin-right:8px;">
+            {% endif %}
+            {{ item.name or 'Product' }}
+          </td>
+          <td class="text-center">{{ item.quantity or 0 }}</td>
+          <td class="text-end">₱{{ '%.2f'|format(item.price_at_time or 0) }}</td>
+          <td class="text-end">₱{{ '%.2f'|format(subtotal) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+(function() {
+  const detailsRoot = document.currentScript.closest('.order-details') || document.getElementById('orderDetailsContent');
+  const mapEl = detailsRoot.querySelector('#modalMap');
+  const viewBtn = detailsRoot.querySelector('#viewMapBtn');
+  const navBtn = detailsRoot.querySelector('#startNavigateBtn');
+  const addrTextEl = detailsRoot.querySelector('.shipping-address-text');
+  const fullAddress = addrTextEl ? addrTextEl.textContent.trim() : '';
+
+  function ensureMapVisible() {
+    if (mapEl && mapEl.style.display === 'none') {
+      mapEl.style.display = 'block';
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+    }
+  }
+  if (viewBtn) {
+    viewBtn.addEventListener('click', () => {
+      ensureMapVisible();
+    });
+  }
+  // navBtn wiring happens in page script after geocoding (to include coords)
+})();
+</script>

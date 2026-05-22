@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}My Messages{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    background-color: #f5e9dc;
+  }
+  .chat-list-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(109, 76, 65, 0.15);
+    overflow: hidden;
+  }
+  .chat-list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s ease;
+  }
+  .chat-list-item:last-child {
+    border-bottom: none;
+  }
+  .chat-list-item:hover {
+    background-color: #fdf5ef;
+  }
+  .chat-title {
+    font-weight: 700;
+    color: #4e342e;
+    font-size: 1.05rem;
+  }
+  .chat-subtitle {
+    color: #8d6e63;
+    font-size: 0.9rem;
+  }
+  .chat-preview {
+    color: #6b6b6b;
+    font-size: 0.88rem;
+  }
+  .chat-meta {
+    text-align: right;
+  }
+  .unread-badge {
+    background-color: #c62828;
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 600;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+  }
+  @media (max-width: 576px) {
+    .chat-list-item {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .chat-meta {
+      text-align: left;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-4">
+    <h3 class="mb-0 text-capitalize" style="color:#4e342e;">
+      <i class="fas fa-comments me-2"></i>My Messages
+    </h3>
+  </div>
+
+  {% if messages and messages|length %}
+    <div class="chat-list-card bg-white">
+      {% for m in messages %}
+      <a class="chat-list-item" href="{{ url_for('chat.view_room', room_id=m.id) }}">
+        <div>
+          <div class="chat-title">{{ m.partner_name or 'Support Team' }}</div>
+          <div class="chat-subtitle">Last message</div>
+          <div class="chat-preview">{{ m.last_message }}</div>
+        </div>
+        <div class="chat-meta">
+          {% if m.last_message_time %}
+            <small class="text-muted d-block">{{ m.last_message_time }}</small>
+          {% endif %}
+          {% if m.unread_count and m.unread_count > 0 %}
+            <span class="unread-badge mt-2">{{ m.unread_count }}</span>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light border text-center">
+      <p class="mb-0 text-muted">You have no messages yet.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

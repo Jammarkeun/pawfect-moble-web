@@ -1,0 +1,333 @@
+/* ============================================
+   Pawfect Finds - Flutter-Matched Design System
+   ============================================ */
+
+/* --- Google Fonts (loaded in base.html) --- */
+
+/* --- CSS Custom Properties --- */
+:root {
+  --brown-dark: #4E342E;
+  --brown-primary: #6D4C41;
+  --brown-medium: #795548;
+  --brown-light: #D7CCC8;
+  --tan: #EBD5B3;
+  --beige-bg: #FAF3E0;
+  --page-bg: #F9F5F0;
+  --white: #FFFFFF;
+  --accent-text: #7A6252;
+  --border-color: #E8DED3;
+  --card-radius: 16px;
+  --input-radius: 10px;
+  --button-radius: 10px;
+  --success: #43a047;
+  --error: #ef5350;
+  --warning: #ffa726;
+  --info: #8B4513;
+}
+
+/* --- Base Body --- */
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--page-bg);
+  color: var(--brown-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+  overflow-x: hidden;
+}
+
+/* --- Typography --- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--brown-dark);
+  font-weight: 700;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+.text-primary { color: var(--brown-primary) !important; }
+.text-muted { color: var(--accent-text) !important; }
+.text-accent { color: var(--accent-text); }
+
+/* --- Cards --- */
+.card {
+  border: none;
+  border-radius: var(--card-radius);
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(78, 52, 46, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(78, 52, 46, 0.12);
+}
+
+/* --- Buttons --- */
+.btn {
+  border-radius: var(--button-radius);
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  transition: all 0.2s ease;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+  border: none;
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(109, 76, 65, 0.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(109, 76, 65, 0.35);
+}
+.btn-outline-primary {
+  border: 2px solid var(--brown-primary);
+  color: var(--brown-primary);
+  background: transparent;
+}
+.btn-outline-primary:hover {
+  background: var(--brown-primary);
+  color: var(--white);
+  border-color: var(--brown-primary);
+}
+.btn-sm {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.85rem;
+}
+.btn-lg {
+  padding: 0.875rem 2rem;
+  font-size: 1.1rem;
+}
+.btn:focus, .btn:active, .btn:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* --- Inputs --- */
+.form-control {
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--input-radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  background: var(--white);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-control:focus {
+  border-color: var(--brown-primary);
+  box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.12);
+  transform: none;
+}
+.form-label {
+  font-weight: 500;
+  color: var(--brown-dark);
+  margin-bottom: 0.4rem;
+}
+.form-select {
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--input-radius);
+  padding: 0.75rem 1rem;
+}
+
+/* --- Badges --- */
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.badge.bg-success { background: var(--success) !important; }
+.badge.bg-danger { background: var(--error) !important; }
+.badge.bg-warning { 
+  background: var(--warning) !important; 
+  color: var(--brown-dark) !important;
+}
+.badge.bg-secondary { background: var(--brown-light) !important; color: var(--brown-dark) !important; }
+.badge.bg-info { background: var(--info) !important; }
+
+/* --- Navbar (Flutter-matched white app bar) --- */
+.navbar {
+  background: var(--white) !important;
+  box-shadow: 0 1px 4px rgba(78, 52, 46, 0.08);
+  padding: 0.5rem 0;
+}
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--brown-dark) !important;
+}
+.navbar-nav .nav-link {
+  color: var(--accent-text) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease;
+}
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: var(--brown-primary) !important;
+}
+.navbar .btn {
+  border-radius: var(--button-radius);
+}
+
+/* --- Footer --- */
+footer {
+  background: var(--brown-dark);
+  color: var(--white);
+  padding: 3rem 0 1.5rem;
+}
+footer h5 {
+  color: var(--white);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+footer a {
+  color: var(--tan);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+footer a:hover {
+  color: var(--white);
+}
+footer hr {
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* --- Product Cards (Flutter-matched) --- */
+.product-card, .category-card {
+  border: none;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(78, 52, 46, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover, .category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(78, 52, 46, 0.12);
+}
+.product-card .card-body {
+  padding: 1rem;
+}
+.product-card .card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brown-dark);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+.product-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brown-primary);
+}
+
+/* --- Image Fixes (crisp, no blur, Retina-ready) --- */
+img {
+  image-rendering: auto;
+  -ms-interpolation-mode: bicubic;
+}
+.product-card img, .product-card .card-img-top {
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  object-position: center;
+  background: var(--beige-bg);
+}
+.product-image-container {
+  height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--beige-bg);
+}
+/* CSS-only placeholder when image_url is empty */
+.product-image-container:empty::after,
+img[src=""] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  content: "";
+  background: var(--beige-bg);
+}
+img[src=""] {
+  min-height: 180px;
+  background: var(--beige-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='none' stroke='%23D7CCC8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'%3E%3C/path%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'%3E%3C/polyline%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+}
+/* Prevent image upscaling - never stretch beyond natural size */
+.product-card img:not([src=""]) {
+  max-width: 100%;
+}
+
+/* --- Pagination --- */
+.pagination .page-link {
+  border: none;
+  border-radius: 8px;
+  margin: 0 0.2rem;
+  color: var(--brown-dark);
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(78, 52, 46, 0.08);
+}
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+  color: var(--white);
+}
+
+/* --- Section --- */
+section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+.bg-light { background: var(--beige-bg) !important; }
+
+/* --- Hero --- */
+.hero-badge {
+  background: var(--tan);
+  color: var(--brown-dark);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- Floating back button --- */
+.back-fab {
+  position: fixed;
+  left: 16px;
+  top: 80px;
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.back-fab.show {
+  opacity: 1;
+  visibility: visible;
+}
+.back-fab .btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  section { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  .product-card img, .card-img-top { height: 160px; }
+  .product-image-container { height: 160px; }
+}

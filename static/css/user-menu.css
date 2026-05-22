@@ -1,0 +1,85 @@
+/* User profile dropdown enhancements */
+.user-menu {
+  --menu-radius: 12px;
+  --menu-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  --menu-bg: var(--card-bg, #ffffff);
+  --menu-border: var(--border-color, #e5e7eb);
+  --menu-hover: var(--bg-tertiary, #f9fafb);
+  --menu-accent: var(--brown-primary, #6D4C41);
+  --text-main: var(--text-primary, #333);
+  --text-muted: var(--text-secondary, #6b7280);
+
+  border-radius: var(--menu-radius);
+  box-shadow: var(--menu-shadow);
+  border: 1px solid var(--menu-border);
+  overflow: hidden;
+  min-width: 260px;
+  background: var(--menu-bg);
+}
+
+/* Dark theme tweaks */
+[data-theme="dark"] .user-menu {
+  --menu-bg: var(--card-bg, #2a2a2a);
+  --menu-border: #3a3a3a;
+  --menu-hover: #3a3a3a;
+  --text-main: #e5e7eb;
+  --text-muted: #a1a1aa;
+}
+
+.user-menu .user-card {
+  background: linear-gradient(to right, rgba(109, 76, 65, 0.08), transparent);
+}
+[data-theme="dark"] .user-menu .user-card {
+  background: linear-gradient(to right, rgba(109, 76, 65, 0.25), transparent);
+}
+
+.user-menu .user-card .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-menu .user-meta .name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+.user-menu .user-meta .sub {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.user-menu .dropdown-divider { margin: 0; }
+
+.user-menu .dropdown-item {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.user-menu .dropdown-item i {
+  width: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.user-menu .dropdown-item:hover {
+  background: var(--menu-hover);
+  color: var(--menu-accent);
+}
+.user-menu .dropdown-item:active {
+  transform: translateY(1px);
+}
+.user-menu .dropdown-item:focus-visible {
+  outline: 2px solid var(--menu-accent);
+  outline-offset: -2px;
+}
+
+/* Logout emphasis */
+.user-menu .logout-item { color: #dc2626; }
+.user-menu .logout-item i { color: #dc2626; }
+.user-menu .logout-item:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+}

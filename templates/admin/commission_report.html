@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="dashboard-header d-flex justify-content-between align-items-center">
+  <h1><i class="fas fa-file-invoice-dollar"></i> Commission Report</h1>
+  <div>
+    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print / Save PDF</button>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form class="row g-3" method="get">
+      <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" name="start" value="{{ start or '' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" name="end" value="{{ end or '' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="status">
+          <option value="all" {{ 'selected' if status=='all' }}>All</option>
+          <option value="delivered" {{ 'selected' if status=='delivered' }}>Delivered</option>
+          <option value="confirmed" {{ 'selected' if status=='confirmed' }}>Confirmed</option>
+          <option value="preparing" {{ 'selected' if status=='preparing' }}>Preparing</option>
+          <option value="shipped" {{ 'selected' if status=='shipped' }}>Shipped</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-secondary w-100" type="submit"><i class="fas fa-filter"></i> Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Seller</th>
+            <th>Status</th>
+            <th class="text-end">Total Amount</th>
+            <th class="text-end">Commission (5%)</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>#{{ r.id }}</td>
+            <td>{{ r.seller_name }}</td>
+            <td><span class="badge bg-info text-dark">{{ r.status }}</span></td>
+            <td class="text-end">{{ r.total_amount|currency }}</td>
+            <td class="text-end">{{ r.commission|currency }}</td>
+            <td>{{ r.created_at }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No data</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3" class="text-end">Totals:</th>
+            <th class="text-end">{{ total_sales|currency }}</th>
+            <th class="text-end">{{ total_commission|currency }}</th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  .navbar, .sidebar, .btn, form { display: none !important; }
+  .card { box-shadow: none !important; border: none !important; }
+}
+</style>
+{% endblock %}

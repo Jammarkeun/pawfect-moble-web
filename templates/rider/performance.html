@@ -1,0 +1,456 @@
+{% extends "rider/base.html" %}
+
+{% block rider_content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-star text-warning me-2"></i>Your Performance
+            </h1>
+            <p class="text-muted mb-0">Track your delivery ratings and customer feedback</p>
+        </div>
+    </div>
+
+    <!-- Performance Summary Cards -->
+    <div class="row mb-4">
+        <!-- Average Rating Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Average Rating</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <i class="fas fa-star text-warning"></i> {{ "%.1f"|format(avg_rating) }} / 5.0
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Ratings Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Ratings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_ratings }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5-Star Ratings -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">5-Star Ratings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rating_distribution.get(5, 0) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-medal fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Percentage -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Quality Score</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set percentage = (avg_rating / 5.0) * 100 %}
+                                {{ "%.0f"|format(percentage) }}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Distribution Chart -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-gray-800">Rating Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="ratingDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Breakdown -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-gray-800">Rating Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    <!-- 5 Stars -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small font-weight-bold">5 <i class="fas fa-star text-warning"></i></span>
+                            <span class="small font-weight-bold">{{ rating_distribution.get(5, 0) }}</span>
+                        </div>
+                        {% set five_percent = (rating_distribution.get(5, 0) / total_ratings * 100) if total_ratings > 0 else 0 %}
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: {{ five_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 4 Stars -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small font-weight-bold">4 <i class="fas fa-star text-warning"></i></span>
+                            <span class="small font-weight-bold">{{ rating_distribution.get(4, 0) }}</span>
+                        </div>
+                        {% set four_percent = (rating_distribution.get(4, 0) / total_ratings * 100) if total_ratings > 0 else 0 %}
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-info" style="width: {{ four_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Stars -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small font-weight-bold">3 <i class="fas fa-star text-warning"></i></span>
+                            <span class="small font-weight-bold">{{ rating_distribution.get(3, 0) }}</span>
+                        </div>
+                        {% set three_percent = (rating_distribution.get(3, 0) / total_ratings * 100) if total_ratings > 0 else 0 %}
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-warning" style="width: {{ three_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2 Stars -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small font-weight-bold">2 <i class="fas fa-star text-warning"></i></span>
+                            <span class="small font-weight-bold">{{ rating_distribution.get(2, 0) }}</span>
+                        </div>
+                        {% set two_percent = (rating_distribution.get(2, 0) / total_ratings * 100) if total_ratings > 0 else 0 %}
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-danger" style="width: {{ two_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 1 Star -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small font-weight-bold">1 <i class="fas fa-star text-warning"></i></span>
+                            <span class="small font-weight-bold">{{ rating_distribution.get(1, 0) }}</span>
+                        </div>
+                        {% set one_percent = (rating_distribution.get(1, 0) / total_ratings * 100) if total_ratings > 0 else 0 %}
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-dark" style="width: {{ one_percent }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Feedback/Reviews Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-gray-800">Customer Feedback</h6>
+                </div>
+                <div class="card-body">
+                    {% if ratings %}
+                    <div class="reviews-list">
+                        {% for rating in ratings %}
+                        <div class="review-item mb-4 pb-4 border-bottom" {% if loop.last %}style="border-bottom: none;"{% endif %}>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="mb-2">
+                                        {% for star in range(rating.rating) %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                        {% for star in range(5 - rating.rating) %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endfor %}
+                                        <span class="ms-2 font-weight-bold">{{ rating.rating }}/5</span>
+                                    </div>
+                                    <p class="text-muted small mb-1">
+                                        <strong>Order #{{ rating.order_id }}</strong> 
+                                        • {{ rating.created_at|format_datetime('%b %d, %Y') if rating.created_at else 'N/A' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if rating.feedback %}
+                            <div class="feedback-text bg-light p-3 rounded">
+                                <p class="mb-0">{{ rating.feedback }}</p>
+                            </div>
+                            {% else %}
+                            <div class="text-muted small">
+                                <em>No feedback provided</em>
+                            </div>
+                            {% endif %}
+                            
+                            {% if rating.delivery_time_minutes %}
+                            <div class="mt-3 small text-muted">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Delivery Time:</strong> {{ rating.delivery_time_minutes }} minutes
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pagination.pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.performance', page=1) }}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.performance', page=pagination.prev_num) }}">Previous</a>
+                            </li>
+                            {% endif %}
+
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == pagination.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('rider.performance', page=page_num) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.performance', page=pagination.next_num) }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('rider.performance', page=pagination.pages) }}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No feedback yet. Complete more deliveries to receive customer ratings!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips for Improving Rating -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-left-success shadow">
+                <div class="card-header bg-success bg-gradient text-white py-3">
+                    <h6 class="m-0 font-weight-bold">Tips for Improving Your Rating</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Be On Time:</strong> Always arrive within estimated delivery time
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Be Professional:</strong> Maintain clean attire and courteous behavior
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Handle with Care:</strong> Ensure packages arrive in perfect condition
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Communicate:</strong> Keep customers updated on delivery status
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Follow Instructions:</strong> Respect delivery notes and preferences
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Respond Quickly:</strong> Address customer concerns immediately
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Rating Distribution Chart
+    const ctx = document.getElementById('ratingDistributionChart');
+    if (ctx) {
+        const labels = ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'];
+        const data = [
+            {{ rating_distribution.get(1, 0) }},
+            {{ rating_distribution.get(2, 0) }},
+            {{ rating_distribution.get(3, 0) }},
+            {{ rating_distribution.get(4, 0) }},
+            {{ rating_distribution.get(5, 0) }}
+        ];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Number of Ratings',
+                    data: data,
+                    backgroundColor: [
+                        '#343a40',
+                        '#dc3545',
+                        '#ffc107',
+                        '#17a2b8',
+                        '#28a745'
+                    ],
+                    borderColor: [
+                        '#343a40',
+                        '#dc3545',
+                        '#ffc107',
+                        '#17a2b8',
+                        '#28a745'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: '#2d3748',
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#4a5568'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#4a5568'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.review-item {
+    transition: background-color 0.2s ease;
+}
+
+.review-item:hover {
+    background-color: rgba(93, 64, 55, 0.02);
+}
+
+.feedback-text {
+    border-left: 4px solid #6D4C41;
+    font-size: 0.95rem;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.chart-area {
+    position: relative;
+    height: 20rem;
+    width: 100%;
+}
+
+.reviews-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.reviews-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Support Rooms{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-headset me-2"></i> Active Support Rooms</h3>
+  </div>
+
+  {% if rooms and rooms|length %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Subject</th>
+            <th>Last message</th>
+            <th>Unread</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rooms %}
+            <tr>
+              <td>{{ r.first_name }} {{ r.last_name }}<br><small class="text-muted">{{ r.email }}</small></td>
+              <td>{{ r.subject or 'Support Request' }}</td>
+              <td><small class="text-muted">{{ r.last_message or '—' }}</small></td>
+              <td>
+                {% if r.unread_count and r.unread_count > 0 %}
+                  <span class="badge bg-danger">{{ r.unread_count }}</span>
+                {% else %}
+                  <span class="text-muted">0</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-primary" href="{{ url_for('chat.view_room', room_id=r.id) }}">Open</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">No active rooms.</p>
+  {% endif %}
+</div>
+{% endblock %}

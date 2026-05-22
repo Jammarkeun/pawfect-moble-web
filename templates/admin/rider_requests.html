@@ -1,0 +1,260 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rider Requests - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<header class="dashboard-header">
+    <div>
+        <h1><i class="fas fa-motorcycle"></i> Rider Requests</h1>
+        <p style="color: var(--accent-brown); margin: 5px 0 0 0;">Review and approve rider applications</p>
+    </div>
+</header>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('admin.rider_requests', status='pending') }}"
+               class="btn {{ 'btn-primary' if current_status == 'pending' else 'btn-outline-primary' }}">
+                Pending ({{ status_counts.pending or 0 }})
+            </a>
+            <a href="{{ url_for('admin.rider_requests', status='approved') }}"
+               class="btn {{ 'btn-success' if current_status == 'approved' else 'btn-outline-success' }}">
+                Approved ({{ status_counts.approved or 0 }})
+            </a>
+            <a href="{{ url_for('admin.rider_requests', status='rejected') }}"
+               class="btn {{ 'btn-danger' if current_status == 'rejected' else 'btn-outline-danger' }}">
+                Rejected ({{ status_counts.rejected or 0 }})
+            </a>
+            <a href="{{ url_for('admin.rider_requests', status='all') }}"
+               class="btn {{ 'btn-secondary' if current_status == 'all' else 'btn-outline-secondary' }}">
+                All ({{ status_counts.all or 0 }})
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Contact</th>
+                                    <th>Vehicle</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in requests %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if req.profile_photo_path %}
+                                                <img src="{{ url_for('static', filename=req.profile_photo_path) }}"
+                                                     alt="Profile"
+                                                     class="rounded-circle me-2"
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="avatar-circle bg-primary text-white me-2"
+                                                     style="width: 40px; height: 40px; line-height: 40px; text-align: center;">
+                                                    {{ (req.first_name[:1] if req.first_name else 'R').upper() }}
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ req.first_name }} {{ req.last_name }}</strong><br>
+                                                <small class="text-muted">{{ req.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ req.phone or 'N/A' }}</strong><br>
+                                        <small class="text-muted">@{{ req.username }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ (req.vehicle_type or 'N/A').replace('_', ' ').title() }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ req.vehicle_model or 'Unknown model' }}{% if req.vehicle_plate_number %} • {{ req.vehicle_plate_number }}{% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if req.status == 'pending' else 'success' if req.status == 'approved' else 'danger' }}">
+                                            {{ req.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set submitted_at = req.created_at or req.submitted_at %}
+                                        {{ submitted_at.strftime('%Y-%m-%d %H:%M') if submitted_at else 'N/A' }}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info view-btn me-1" data-id="{{ req.id }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        {% if req.status == 'pending' %}
+                                            <button class="btn btn-sm btn-success approve-btn me-1" data-id="{{ req.id }}">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button class="btn btn-sm btn-danger reject-btn" data-id="{{ req.id }}">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted"></i>
+                        <h5 class="mt-3 text-muted">No rider requests found</h5>
+                        <p class="text-muted">Try switching to another status filter.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve Rider Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="approveForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Admin Notes (Optional)</label>
+                        <textarea class="form-control" name="admin_notes" rows="3"
+                                  placeholder="Add any notes about this rider approval..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Approve Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Rider Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Rejection *</label>
+                        <textarea class="form-control" name="admin_notes" rows="3"
+                                  required placeholder="Provide a reason for rejecting this application..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Reject Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rider Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.approve-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const requestId = this.dataset.id;
+            document.getElementById('approveForm').action = `/admin/rider-requests/${requestId}/approve`;
+            new bootstrap.Modal(document.getElementById('approveModal')).show();
+        });
+    });
+
+    document.querySelectorAll('.reject-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const requestId = this.dataset.id;
+            document.getElementById('rejectForm').action = `/admin/rider-requests/${requestId}/reject`;
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        });
+    });
+
+    document.querySelectorAll('.view-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const requestId = this.dataset.id;
+            const modal = new bootstrap.Modal(document.getElementById('viewModal'));
+            modal.show();
+
+            const modalBody = document.getElementById('viewModalBody');
+            modalBody.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+
+            fetch(`/admin/rider-requests/${requestId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        modalBody.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                            </div>
+                        `;
+                    } else {
+                        modalBody.innerHTML = data.html;
+                    }
+                })
+                .catch(() => {
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Failed to load request details.
+                        </div>
+                    `;
+                });
+        });
+    });
+});
+</script>
+{% endblock %}
+

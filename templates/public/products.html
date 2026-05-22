@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Pawfect Finds{% endblock %}
+
+{% block content %}
+<style>
+    .products-page {
+        padding: 2rem clamp(1rem, 3vw, 4rem) 4rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .search-bar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 0 1 auto;
+    }
+    .search-bar-wrapper .search-bar {
+        display: flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1.5px solid var(--border-color);
+        background: var(--white);
+        padding: 0.25rem;
+        min-width: 280px;
+    }
+    .search-bar-wrapper .search-bar input {
+        flex: 1;
+        border: none;
+        padding: 0.55rem 1rem;
+        outline: none;
+        background: transparent;
+        font-size: 0.9rem;
+    }
+    .search-bar-wrapper .search-bar button {
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+        color: var(--white);
+        padding: 0.45rem 1.15rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    /* Category pills (Flutter-matched chip style) */
+    .categories-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem 0;
+    }
+    .category-pill {
+        border-radius: 999px;
+        padding: 0.35rem 1.1rem;
+        border: 2px solid var(--brown-light);
+        background: var(--beige-bg);
+        color: var(--brown-dark);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+    .category-pill:hover,
+    .category-pill.active {
+        background: var(--brown-primary);
+        color: var(--white);
+        border-color: var(--brown-primary);
+    }
+
+    /* Product cards (Flutter-matched) */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+    .product-card {
+        border: none;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background: var(--white);
+        box-shadow: 0 2px 8px rgba(78, 52, 46, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(78, 52, 46, 0.12);
+    }
+
+    /* Image area - Flutter aspect ratio ~0.6 */
+    .product-card .card-img-top {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        max-height: 220px;
+        min-height: 160px;
+        object-fit: contain;
+        object-position: center;
+        background: var(--beige-bg);
+    }
+    .product-card .card-img-placeholder {
+        height: 180px;
+        background: var(--beige-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-card .card-body {
+        padding: 0.875rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .product-card .card-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--brown-dark);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.3;
+        margin: 0;
+    }
+    .product-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .product-price {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--brown-primary);
+    }
+    .stock-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    .stock-badge.in-stock { background: rgba(67, 160, 71, 0.12); color: var(--success); }
+    .stock-badge.low-stock { background: rgba(255, 167, 38, 0.12); color: var(--warning); }
+    .stock-badge.out-of-stock { background: rgba(239, 83, 80, 0.12); color: var(--error); }
+
+    .product-card .btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--brown-light);
+        margin-bottom: 1rem;
+    }
+    .empty-state h4 {
+        color: var(--brown-dark);
+        margin-bottom: 0.5rem;
+    }
+    .empty-state p {
+        color: var(--accent-text);
+    }
+
+    @media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .products-page { padding: 1rem 0.75rem 2rem; }
+        .page-header { flex-direction: column; align-items: stretch; }
+        .search-bar-wrapper { width: 100%; }
+        .search-bar-wrapper .search-bar { min-width: 0; width: 100%; }
+        .product-card .card-img-top { height: 130px; }
+    }
+</style>
+
+<div class="products-page">
+    <!-- Header with search -->
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-bag"></i> Pet Products</h1>
+        <form method="GET" id="searchForm" class="search-bar-wrapper">
+            <div class="search-bar">
+                <input type="text" id="search" name="search" value="{{ search or '' }}" placeholder="Search products..." autocomplete="off">
+                <button type="submit"><i class="fas fa-search me-1"></i>Search</button>
+            </div>
+            <a href="{{ url_for('public.browse_products') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+
+    <!-- Category pills (Flutter chip style) -->
+    <div class="categories-row">
+        <a href="{{ url_for('public.browse_products') }}" class="category-pill {{ 'active' if not category_id else '' }}">All</a>
+        {% for cat in categories %}
+        <a href="{{ url_for('public.browse_products', category=cat.id) }}" class="category-pill {{ 'active' if category_id == cat.id else '' }}">
+            {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Product grid -->
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+                <div class="product-card">
+                    {% set img_url = product.image_url|image_url %}
+                    {% if img_url %}
+                        <img src="{{ img_url }}" class="card-img-top" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                        <div class="card-img-placeholder">
+                            <i class="fas fa-shopping-bag fa-3x" style="color: var(--brown-light);"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ product.name }}</h6>
+                        <div class="product-meta">
+                            <span class="product-price">₱{{ "%.2f"|format(product.price) }}</span>
+                            {% if product.stock_quantity <= 0 %}
+                                <span class="stock-badge out-of-stock">Out of Stock</span>
+                            {% elif product.stock_quantity <= 5 %}
+                                <span class="stock-badge low-stock">Low Stock</span>
+                            {% else %}
+                                <span class="stock-badge in-stock">In Stock</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('public.product_detail', product_id=product.id) }}" class="btn btn-primary w-100">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('public.browse_products', page=prev_page, search=search, category=category_id) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {{ 'active' if p == current_page }}">
+                            <a class="page-link" href="{{ url_for('public.browse_products', page=p, search=search, category=category_id) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('public.browse_products', page=next_page, search=search, category=category_id) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h4>No Products Found</h4>
+            <p>{% if search or category_id %}Try adjusting your search or filter criteria.{% else %}No products available at the moment.{% endif %}</p>
+            <a href="{{ url_for('public.browse_products') }}" class="btn btn-primary">
+                <i class="fas fa-refresh"></i> View All Products
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const value = searchInput.value.trim();
+                const params = new URLSearchParams(window.location.search);
+                if (value) params.set('search', value);
+                else params.delete('search');
+                params.delete('page');
+                const query = params.toString();
+                window.location.href = window.location.pathname + (query ? '?' + query : '');
+            }, 400);
+        });
+    }
+</script>
+{% endblock %}

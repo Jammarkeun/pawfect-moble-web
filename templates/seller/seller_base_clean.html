@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/dashboard-unified.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+{% if current_user %}
+    <body class="seller-dashboard dashboard-layout" data-seller-id="{{ current_user.id }}">
+{% else %}
+    <body class="seller-dashboard dashboard-layout">
+{% endif %}
+<style>
+/* Seller-specific overrides for unified dashboard */
+.seller-info-bar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #ffffff, #faf8f5);
+    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    padding: 12px 0;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.seller-info-bar .container-fluid {
+    padding-left: 295px;
+}
+
+.seller-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-brown), var(--secondary-brown));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(139, 69, 19, 0.3);
+}
+
+.seller-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--accent-brown);
+    font-size: 0.9rem;
+    margin-top: 30px;
+    border-top: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+/* Main layout structure */
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #5D4037, #4E342E);
+    color: white;
+    border-right: 0;
+    padding: 30px 20px 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+/* Sidebar header */
+.sidebar .sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .sidebar-header h4 {
+    color: white !important;
+    margin: 10px 0 0 0;
+    font-weight: 600;
+}
+
+.sidebar .sidebar-header .logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar .sidebar-header .logo i {
+    font-size: 24px;
+    color: white;
+}
+
+/* Sidebar navigation */
+.sidebar .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-links li {
+    margin-bottom: 5px;
+}
+
+.sidebar .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.sidebar .nav-links a:hover,
+.sidebar .sidebar-nav a.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateX(5px);
+}
+
+.sidebar .nav-links i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Sidebar categories */
+.nav-category {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin: 20px 0 10px 0;
+    padding-left: 16px;
+    display: block;
+}
+
+.main-content {
+    flex: 1;
+    background-color: var(--beige);
+    padding: 120px 30px 30px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1050;
+        transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+        display: block;
+        transform: translateX(0);
+    }
+
+    .main-content {
+        padding: 100px 15px 15px;
+    }
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 30px;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card .card-header {
+    background: linear-gradient(135deg, var(--brown-primary), var(--brown-dark));
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 15px 20px !important;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.dashboard-card .card-body {
+    padding: 20px;
+}
+
+.seller-info-bar {
+    position: fixed;
+    top: 56px;
+    left: 280px;
+    right: 0;
+    background: linear-gradient(135deg, #ffffff, #faf8f5);
+    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    padding: 12px 20px;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.download-btn {
+    background: var(--brown-primary);
+    border-color: var(--brown-primary);
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: var(--brown-dark);
+    border-color: var(--brown-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+</style>
+
+<div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-paw fa-2x mb-2" style="color: rgba(255, 255, 255, 0.9);"></i>
+            <h4>Pawfect Finds</h4>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav-links">
+            <span class="nav-category">MAIN</span>
+            <li>
+                <a href="{{ url_for('seller.dashboard') }}" class="{% if request.endpoint == 'seller.dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+
+            <span class="nav-category">PRODUCTS</span>
+            <li>
+                <a href="{{ url_for('seller.products') }}" class="{% if 'product' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-box"></i> Products
+                </a>
+            </li>
+
+            <span class="nav-category">ORDERS</span>
+            <li>
+                <a href="{{ url_for('seller.orders') }}" class="{% if 'order' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-shopping-cart"></i> Orders
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('seller.manage_returns') }}">
+                    <i class="fas fa-undo"></i> Returns
+                </a>
+            </li>
+
+            <span class="nav-category">ANALYTICS</span>
+            <li>
+                <a href="{{ url_for('seller.analytics') }}" class="{% if 'analytics' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+            </li>
+
+            <span class="nav-category">COMMUNICATION</span>
+            <li>
+                <a href="{{ url_for('chat.my_rooms') }}" class="{% if request.endpoint == 'chat.my_rooms' %}active{% endif %}">
+                    <i class="fas fa-comments"></i> Messages
+                </a>
+            </li>
+
+            <span class="nav-category">ACCOUNT</span>
+            <li>
+                <a href="{{ url_for('seller.settings') }}" class="{% if 'settings' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('auth.logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            {% block seller_content %}
+            {% endblock %}
+        </div>
+    </main>
+</div>
+
+{% endblock %}
