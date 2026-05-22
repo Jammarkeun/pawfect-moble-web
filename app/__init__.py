@@ -61,7 +61,7 @@ def create_app(config_name='default'):
     # Basic configuration
     app.config.update(
         SECRET_KEY=os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production'),
-        SESSION_TYPE='filesystem',
+        SESSION_TYPE='null',
         UPLOAD_FOLDER='static/uploads',
         SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_HTTPONLY=True,
@@ -116,7 +116,7 @@ def create_app(config_name='default'):
     print("=========================\n")
     
     # Initialize extensions with app
-    sess.init_app(app)
+    # sess.init_app(app)  # Not needed with SESSION_TYPE='null'
     csrf.init_app(app)
     
     # Initialize WebSocket with the app
