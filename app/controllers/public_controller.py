@@ -8,15 +8,16 @@ public_bp = Blueprint('public', __name__)
 
 @public_bp.route('/')
 def landing():
-    """Landing page with featured products"""
-    # Get featured products (newest ones)
-    featured_products = Product.list(limit=8, offset=0)
-    
-    # Get categories using Supabase
-    db = Database()
-    categories = db.select('categories')
-    
-    return render_template('public/landing.html', 
+    try:
+        featured_products = Product.list(limit=8, offset=0)
+    except Exception as e:
+        featured_products = []
+    try:
+        db = Database()
+        categories = db.select('categories')
+    except Exception:
+        categories = []
+    return render_template('public/landing.html',
                          featured_products=featured_products,
                          categories=categories)
 

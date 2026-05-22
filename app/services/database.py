@@ -27,19 +27,17 @@ class Database:
                 logging.error(f"Failed to initialize Supabase client: {e}")
         else:
             logging.error(f"Supabase env vars missing — URL set: {bool(self.supabase_url)}, KEY set: {bool(self.supabase_key)}")
-    
+
     def init_app(self, app):
         """Initialize with Flask app"""
-        try:
-            url = app.config.get('SUPABASE_URL')
-            # Use SERVICE_ROLE key to bypass RLS
-            key = app.config.get('SUPABASE_SERVICE_KEY')
-            if url and key:
-                self.supabase_url = url
-                self.supabase_key = key
+        url = app.config.get('SUPABASE_URL')
+        key = app.config.get('SUPABASE_SERVICE_KEY')
+        if url and key and not self.client:
+            try:
                 self.client = create_client(url, key)
-        except Exception as e:
-            logging.error(f"Failed to initialize Supabase in app context: {e}")
+                logging.info(f"Supabase re-initialized via init_app")
+            except Exception as e:
+                logging.error(f"Failed to initialize Supabase in app context: {e}")
     
     def execute_query(self, query: str, params: tuple = None, fetch: bool = False, fetchone: bool = False, commit: bool = True):
         """

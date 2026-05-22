@@ -71,7 +71,13 @@ def login():
         email = form.email.data.strip()
         password = form.password.data
         
-        user = User.authenticate(email, password)
+        try:
+            user = User.authenticate(email, password)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Login error: {e}")
+            flash('Unable to connect to authentication service. Please try again.', 'error')
+            return render_template('auth/login.html', form=form)
         if user:
             if user['status'] != 'active':
                 if user['status'] == 'pending':
