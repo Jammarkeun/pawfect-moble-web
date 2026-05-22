@@ -22,7 +22,7 @@ csrf = CSRFProtect()
 # Initialize SocketIO with CORS enabled and other configurations
 socketio = SocketIO(
     cors_allowed_origins="*",
-    async_mode='threading',
+    async_mode='eventlet',
     logger=False,
     engineio_logger=False,
     ping_timeout=60,

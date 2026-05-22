@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+
+# Eventlet monkey patch MUST be first before any other imports
+import eventlet
+eventlet.monkey_patch()
+
 from dotenv import load_dotenv
 
 # Force UTF-8 encoding for Python environment on Windows
