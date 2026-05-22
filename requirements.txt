@@ -4,3 +4,4 @@ supabase
 python-dotenv
 python-socketio
 eventlet
+Flask-Session==0.8.0
