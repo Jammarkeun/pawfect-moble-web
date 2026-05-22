@@ -2,6 +2,6 @@ services:
   - type: web
     name: pawfect-finds
     env: python
-    runtime: python-3.11.9
+    runtime: python
     buildCommand: pip install --prefer-binary -r requirements.txt
     startCommand: python run.py
