@@ -19,17 +19,22 @@ class Database:
         self.supabase_key = os.getenv('SUPABASE_SERVICE_KEY', '')
         self.client: Optional[Client] = None
         
+        # DEBUG: Log what we're getting from environment
+        logging.info(f"[Database.__init__] SUPABASE_URL from env: {'SET' if self.supabase_url else 'NOT SET'}")
+        logging.info(f"[Database.__init__] SUPABASE_SERVICE_KEY from env: {'SET' if self.supabase_key else 'NOT SET'}")
+        
         if self.supabase_url and self.supabase_key:
             try:
                 self.client = create_client(self.supabase_url, self.supabase_key)
                 # Only log once per process
                 if not hasattr(Database, '_logged'):
-                    logging.info(f"Supabase client initialized successfully")
+                    logging.info(f"✅ Supabase client initialized successfully")
                     Database._logged = True
             except Exception as e:
-                logging.error(f"Failed to initialize Supabase client: {e}")
+                logging.error(f"❌ Failed to initialize Supabase client: {e}")
         else:
-            logging.error(f"Supabase env vars missing — URL set: {bool(self.supabase_url)}, KEY set: {bool(self.supabase_key)}")
+            logging.error(f"❌ Supabase env vars missing — URL set: {bool(self.supabase_url)}, KEY set: {bool(self.supabase_key)}")
+            logging.error(f"   Please set SUPABASE_URL and SUPABASE_SERVICE_KEY in Render environment variables")
 
     def init_app(self, app):
         """Initialize with Flask app"""
@@ -50,7 +55,7 @@ class Database:
         For complex queries (JOINs, GROUP BY), logs a warning and returns empty.
         """
         if not self.client:
-            raise Exception("Supabase client not initialized. Check your SUPABASE_URL and SUPABASE_KEY.")
+            raise Exception("Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_KEY env vars.")
         
         query = query.strip()
         query_upper = query.upper()
